@@ -1,0 +1,52 @@
+name: Test login flow
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scraper/**"
+      - ".github/workflows/test-login.yml"
+
+concurrency:
+  group: test-login
+  cancel-in-progress: true
+
+permissions:
+  contents: write # needed to push live debug screenshots to the debug-live branch
+
+jobs:
+  login-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+
+      - name: Install dependencies
+        working-directory: scraper
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: scraper
+        run: npx playwright install --with-deps chromium
+
+      - name: Run login test (live debug enabled)
+        working-directory: scraper
+        env:
+          YOCO_EMAIL: ${{ secrets.YOCO_EMAIL }}
+          YOCO_PASSWORD: ${{ secrets.YOCO_PASSWORD }}
+          LIVE_DEBUG_PUSH: "1"
+        run: node login-test.js
+
+      - name: Upload debug artifacts (screenshots + video)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: login-debug
+          path: debug/live/
+          retention-days: 7

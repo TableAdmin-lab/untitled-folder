@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login flow — live debug</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e;
+    --blue: #58a6ff; --green: #3fb950; --red: #f85149; --amber: #d29922;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--text); font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; padding: 20px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  h1 { font-size: 18px; }
+  .badge { padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); }
+  .badge.running { color: var(--amber); border-color: var(--amber); }
+  .badge.passed  { color: var(--green); border-color: var(--green); }
+  .badge.failed  { color: var(--red);   border-color: var(--red); }
+  .badge.idle    { color: var(--dim); }
+  header input { margin-left: auto; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 10px; width: 240px; }
+
+  .split { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+  @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); padding: 10px 14px; border-bottom: 1px solid var(--border); }
+
+  /* left: login window screenshot */
+  .screen { position: relative; min-height: 420px; display: flex; align-items: center; justify-content: center; background: #010409; }
+  .screen img { max-width: 100%; display: block; }
+  .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(1,4,9,.65); backdrop-filter: blur(2px); }
+  .overlay.hidden { display: none; }
+  .spinner { width: 46px; height: 46px; border-radius: 50%; border: 4px solid var(--border); border-top-color: var(--blue); animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .overlay .msg { color: var(--dim); font-size: 13px; }
+
+  /* right: step timeline */
+  .steps { list-style: none; padding: 8px 0; max-height: 560px; overflow-y: auto; }
+  .steps li { display: flex; gap: 10px; align-items: baseline; padding: 8px 14px; cursor: pointer; border-left: 3px solid transparent; }
+  .steps li:hover { background: rgba(255,255,255,.04); }
+  .steps li.active { border-left-color: var(--blue); background: rgba(88,166,255,.08); }
+  .steps .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex: none; align-self: center; }
+  .steps li.fail .dot { background: var(--red); }
+  .steps li.pending .dot { background: var(--amber); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .3; } }
+  .steps .name { flex: 1; }
+  .steps .ms { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .meta { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px; }
+  .error { color: var(--red); padding: 10px 14px; white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>⚡ Login flow — live debug</h1>
+    <span id="state" class="badge idle">waiting…</span>
+    <input id="repo" placeholder="owner/repo" title="GitHub repo (owner/name)" />
+  </header>
+
+  <div class="split">
+    <section class="panel">
+      <h2>Login window (agent view)</h2>
+      <div class="screen">
+        <img id="shot" alt="" />
+        <div id="overlay" class="overlay">
+          <div class="spinner"></div>
+          <div class="msg" id="overlayMsg">Waiting for the agent to start…</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Agent steps</h2>
+      <ul id="steps" class="steps"></ul>
+      <div id="error" class="error" hidden></div>
+      <div id="meta" class="meta">No run data yet. Trigger the “Test login flow” workflow.</div>
+    </section>
+  </div>
+
+<script>
+  // The workflow force-pushes debug/live/* to the `debug-live` branch after
+  // every step; this page polls raw.githubusercontent.com for it.
+  const params = new URLSearchParams(location.search);
+  const repoInput = document.getElementById("repo");
+  repoInput.value =
+    params.get("repo") ||
+    localStorage.getItem("debugRepo") ||
+    autoDetectRepo() ||
+    "";
+  repoInput.addEventListener("change", () => {
+    localStorage.setItem("debugRepo", repoInput.value.trim());
+    poll();
+  });
+
+  function autoDetectRepo() {
+    // On GitHub Pages: https://<owner>.github.io/<repo>/debug.html
+    const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+    const seg = location.pathname.split("/").filter(Boolean)[0];
+    return m && seg ? `${m[1]}/${seg}` : null;
+  }
+
+  const base = () =>
+    `https://raw.githubusercontent.com/${repoInput.value.trim()}/debug-live/debug/live`;
+
+  const $state = document.getElementById("state");
+  const $steps = document.getElementById("steps");
+  const $shot = document.getElementById("shot");
+  const $overlay = document.getElementById("overlay");
+  const $overlayMsg = document.getElementById("overlayMsg");
+  const $meta = document.getElementById("meta");
+  const $error = document.getElementById("error");
+
+  let pinnedStep = null; // user clicked a step → stop auto-following
+  let lastStatus = null;
+
+  async function poll() {
+    if (!repoInput.value.includes("/")) return;
+    try {
+      const res = await fetch(`${base()}/status.json?t=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(res.status);
+      render(await res.json());
+    } catch {
+      /* branch may not exist yet — keep the idle overlay */
+    }
+  }
+
+  function render(s) {
+    lastStatus = s;
+    $state.textContent = s.state;
+    $state.className = `badge ${s.state}`;
+
+    // steps list
+    $steps.innerHTML = "";
+    s.steps.forEach((st, i) => {
+      const li = document.createElement("li");
+      const isLast = i === s.steps.length - 1;
+      if (st.name === "failure") li.classList.add("fail");
+      if (isLast && s.state === "running") li.classList.add("pending");
+      li.innerHTML = `<span class="dot"></span>
+        <span class="name">${st.n}. ${st.name}</span>
+        <span class="ms">+${(st.ms / 1000).toFixed(1)}s</span>`;
+      li.onclick = () => { pinnedStep = st.shot; showShot(st.shot); highlight(li); };
+      $steps.appendChild(li);
+    });
+
+    // screenshot: follow the newest step unless the user pinned one
+    const latest = s.steps[s.steps.length - 1];
+    if (latest && !pinnedStep) {
+      showShot(latest.shot);
+      highlight($steps.lastElementChild);
+    }
+
+    // loading overlay: visible while running (or before any screenshot exists)
+    const running = s.state === "running";
+    $overlay.classList.toggle("hidden", !running && !!latest);
+    $overlayMsg.textContent = running
+      ? `Agent working: ${latest ? latest.name : "starting browser"}…`
+      : "Waiting for the agent to start…";
+
+    $error.hidden = !s.error;
+    $error.textContent = s.error || "";
+    $meta.textContent =
+      `Started ${new Date(s.startedAt).toLocaleString()}` +
+      (s.finishedAt ? ` · finished ${new Date(s.finishedAt).toLocaleTimeString()}` : " · in progress");
+
+    if (running) pinnedStep = null; // always auto-follow during a live run
+  }
+
+  function showShot(name) {
+    $shot.src = `${base()}/${name}?t=${Date.now()}`;
+  }
+  function highlight(li) {
+    [...$steps.children].forEach((el) => el.classList.remove("active"));
+    if (li) li.classList.add("active");
+  }
+
+  poll();
+  setInterval(poll, 4000);
+</script>
+</body>
+</html>
