@@ -155,26 +155,77 @@ async function main() {
   }
 }
 
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
 /* Drive the on-page date selector. Yoco's app is React Native Web, so
-   everything is a styled div — we go by visible text. The report page has
-   a fixed row of period buttons (Today / Yesterday / This week / Last week /
-   This month / Last month / Custom range / Location) — click "Custom range"
-   directly instead of scanning for whichever period happens to be active. */
+   everything is a styled div — we go by visible text/role. The report page
+   has a fixed row of period buttons (Today / Yesterday / This week /
+   Last week / This month / Last month / Custom range / Location) — click
+   "Custom range" (a real <button role="button">) to open the calendar. */
 async function setDateRangeViaUi(page, start, end) {
-  await page.getByText("Custom range", { exact: true }).first().click();
+  await page.getByRole("button", { name: "Custom range", exact: true }).click();
   await page.waitForTimeout(800);
 
-  // Calendar day cells: click start then end day numbers.
   for (const d of [start, end]) {
-    await page
-      .getByText(String(d.getUTCDate()), { exact: true })
-      .first()
-      .click();
+    await selectMonthYear(page, d);
+    await clickDay(page, d);
+  }
+  await page.getByRole("button", { name: "Apply", exact: true }).click();
+  await page.waitForTimeout(3_000);
+}
+
+/* The month/year controls (e.g. "July", "2026") are buttons with a trailing
+   MaterialIcons chevron glyph, not plain text — clicking one opens a
+   picker list of options. We click the button showing the current
+   month/year name, then pick the target value from the list that appears
+   (using .last() since the list's copy of the label renders after the
+   button itself in DOM order). No-op if the target is already showing. */
+async function selectMonthYear(page, d) {
+  const targetMonth = MONTH_NAMES[d.getUTCMonth()];
+  const targetYear = String(d.getUTCFullYear());
+
+  const monthBtn = page
+    .locator('button[role="button"]')
+    .filter({ hasText: new RegExp(`^(${MONTH_NAMES.join("|")})$`) })
+    .first();
+  if ((await monthBtn.textContent())?.trim() !== targetMonth) {
+    await monthBtn.click();
+    await page.waitForTimeout(400);
+    await page.getByText(targetMonth, { exact: true }).last().click();
     await page.waitForTimeout(400);
   }
-  const apply = page.getByText(/apply|done|confirm/i).first();
-  if (await apply.count()) await apply.click();
-  await page.waitForTimeout(3_000);
+
+  const yearBtn = page
+    .locator('button[role="button"]')
+    .filter({ hasText: /^\d{4}$/ })
+    .first();
+  if ((await yearBtn.textContent())?.trim() !== targetYear) {
+    await yearBtn.click();
+    await page.waitForTimeout(400);
+    await page.getByText(targetYear, { exact: true }).last().click();
+    await page.waitForTimeout(400);
+  }
+}
+
+/* Day cells belonging to the previous/next month (shown greyed-out to fill
+   the grid) carry an extra "r-eu3ka" class that in-month days don't — click
+   only cells without it so we never land on the wrong month's "30". */
+async function clickDay(page, d) {
+  const day = String(d.getUTCDate());
+  const cell = page
+    .locator("div.r-1awozwy:not(.r-eu3ka)")
+    .filter({ hasText: new RegExp(`^${day}$`) })
+    .first();
+  if (await cell.count()) {
+    await cell.click();
+  } else {
+    // fallback if the class name ever changes
+    await page.getByText(day, { exact: true }).first().click();
+  }
+  await page.waitForTimeout(400);
 }
 
 /* Header-flexible xlsx → dashboard JSON. */
