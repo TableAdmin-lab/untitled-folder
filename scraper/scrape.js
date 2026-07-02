@@ -170,44 +170,41 @@ async function setDateRangeViaUi(page, start, end) {
   await page.waitForTimeout(800);
 
   for (const d of [start, end]) {
-    await selectMonthYear(page, d);
+    await navigateToMonth(page, d);
     await clickDay(page, d);
   }
   await page.getByRole("button", { name: "Apply", exact: true }).click();
   await page.waitForTimeout(3_000);
 }
 
-/* The month/year controls (e.g. "July", "2026") are buttons with a trailing
-   MaterialIcons chevron glyph, not plain text — clicking one opens a
-   picker list of options. We click the button showing the current
-   month/year name, then pick the target value from the list that appears
-   (using .last() since the list's copy of the label renders after the
-   button itself in DOM order). No-op if the target is already showing. */
-async function selectMonthYear(page, d) {
+/* The ← / → month-navigation buttons are icon-only (MaterialIcons glyph,
+   no text/aria-label) and otherwise identical — but they're the only
+   circular 36x36 buttons in the calendar, and ← is first in DOM order.
+   Our target dates are always in the past relative to "today" (the
+   calendar's default), so we only ever need to click back. */
+async function navigateToMonth(page, d) {
   const targetMonth = MONTH_NAMES[d.getUTCMonth()];
   const targetYear = String(d.getUTCFullYear());
-
+  const backArrow = page
+    .locator('button[style*="width: 36px"][style*="height: 36px"]')
+    .first();
   const monthBtn = page
     .locator('button[role="button"]')
     .filter({ hasText: new RegExp(`^(${MONTH_NAMES.join("|")})$`) })
     .first();
-  if ((await monthBtn.textContent())?.trim() !== targetMonth) {
-    await monthBtn.click();
-    await page.waitForTimeout(400);
-    await page.getByText(targetMonth, { exact: true }).last().click();
-    await page.waitForTimeout(400);
-  }
-
   const yearBtn = page
     .locator('button[role="button"]')
     .filter({ hasText: /^\d{4}$/ })
     .first();
-  if ((await yearBtn.textContent())?.trim() !== targetYear) {
-    await yearBtn.click();
-    await page.waitForTimeout(400);
-    await page.getByText(targetYear, { exact: true }).last().click();
-    await page.waitForTimeout(400);
+
+  for (let i = 0; i < 24; i++) {
+    const curMonth = (await monthBtn.textContent())?.trim();
+    const curYear = (await yearBtn.textContent())?.trim();
+    if (curMonth === targetMonth && curYear === targetYear) return;
+    await backArrow.click();
+    await page.waitForTimeout(300);
   }
+  console.warn(`navigateToMonth: gave up looking for ${targetMonth} ${targetYear}`);
 }
 
 /* Day cells belonging to the previous/next month (shown greyed-out to fill
