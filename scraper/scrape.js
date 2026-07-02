@@ -123,9 +123,10 @@ async function main() {
       await shot(page, "04b-report-retry");
     }
 
-    await setDateRangeViaUi(page, start, end).catch((e) =>
-      console.warn("Date-selector UI did not complete:", e.message)
-    );
+    await setDateRangeViaUi(page, start, end).catch(async (e) => {
+      console.warn("Date-selector UI did not complete:", e.message);
+      await page.keyboard.press("Escape").catch(() => {}); // close any stuck calendar overlay
+    });
     await shot(page, "05-after-datepicker");
 
     /* ---- 3. download → Excel ---- */
@@ -188,18 +189,23 @@ async function navigateToMonth(page, d) {
   const backArrow = page
     .locator('button[style*="width: 36px"][style*="height: 36px"]')
     .first();
+  // These buttons render as e.g. "July" followed by a hidden MaterialIcons
+  // glyph character (invisible on screen but present in textContent), so
+  // exact/anchored text matching never hits — match the substring instead.
   const monthBtn = page
     .locator('button[role="button"]')
-    .filter({ hasText: new RegExp(`^(${MONTH_NAMES.join("|")})$`) })
+    .filter({ hasText: new RegExp(MONTH_NAMES.join("|")) })
     .first();
   const yearBtn = page
     .locator('button[role="button"]')
-    .filter({ hasText: /^\d{4}$/ })
+    .filter({ hasText: /\d{4}/ })
     .first();
 
   for (let i = 0; i < 24; i++) {
-    const curMonth = (await monthBtn.textContent())?.trim();
-    const curYear = (await yearBtn.textContent())?.trim();
+    const monthText = (await monthBtn.textContent()) || "";
+    const yearText = (await yearBtn.textContent()) || "";
+    const curMonth = MONTH_NAMES.find((m) => monthText.includes(m));
+    const curYear = yearText.match(/\d{4}/)?.[0];
     if (curMonth === targetMonth && curYear === targetYear) return;
     await backArrow.click();
     await page.waitForTimeout(300);
