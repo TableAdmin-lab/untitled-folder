@@ -104,29 +104,29 @@ async function main() {
     console.log("Logged in:", page.url());
     await shot(page, "03-logged-in");
 
-    /* ---- 2. products report, custom date range via URL ---- */
-    // The report page reads its period from the query string; try the custom
-    // range params first, then fall back to the on-page date selector.
-    const reportUrl =
-      `https://app.yoco.com/reports/products/home` +
-      `?period=custom&startDate=${ymd(start)}&endDate=${ymd(end)}&report=products`;
+    /* ---- 2. products report ---- */
+    // Guessed query-string params (period=custom&startDate=...) made Yoco's
+    // own SPA choke and show a "can't connect" screen — its data-fetch
+    // couldn't handle them. Load the plain report page and drive the date
+    // range entirely through the on-page UI instead.
+    const reportUrl = "https://app.yoco.com/reports/products/home";
     console.log("Opening report:", reportUrl);
     await page.goto(reportUrl, { waitUntil: "networkidle" });
     await page.waitForTimeout(5_000);
     await shot(page, "04-report");
 
-    // Fallback: if the page ignored the URL params it will still say
-    // "Last week" (or similar) — drive the date selector UI instead.
-    const bodyText = await page.textContent("body");
-    const wantsUi =
-      !bodyText.includes(String(start.getUTCDate())) ||
-      /last week/i.test(bodyText) === false; // heuristic; UI path below is defensive anyway
-    if (wantsUi) {
-      await setDateRangeViaUi(page, start, end).catch((e) =>
-        console.warn("Date-selector UI fallback did not complete:", e.message)
-      );
-      await shot(page, "05-after-datepicker");
+    // Yoco occasionally shows a transient "can't connect" screen — reload once.
+    if (/can'?t connect/i.test(await page.textContent("body"))) {
+      console.warn("Got a connectivity error screen — reloading once.");
+      await page.reload({ waitUntil: "networkidle" });
+      await page.waitForTimeout(5_000);
+      await shot(page, "04b-report-retry");
     }
+
+    await setDateRangeViaUi(page, start, end).catch((e) =>
+      console.warn("Date-selector UI did not complete:", e.message)
+    );
+    await shot(page, "05-after-datepicker");
 
     /* ---- 3. download → Excel ---- */
     console.log("Downloading Excel export…");
