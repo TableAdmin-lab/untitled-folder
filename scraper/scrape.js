@@ -130,19 +130,8 @@ async function main() {
 
     /* ---- 3. download → Excel ---- */
     console.log("Downloading Excel export…");
-    // Top-right download icon: a MaterialIcons glyph (file_download, U+E2C4).
-    const downloadIcon = page
-      .locator('div[style*="MaterialIcons"]', { hasText: "" })
-      .last();
-    if (await downloadIcon.count()) {
-      await downloadIcon.click();
-    } else {
-      // fallback: any MaterialIcons element in the header area
-      await page
-        .locator('div[style*="MaterialIcons"]')
-        .last()
-        .click();
-    }
+    // Top-right "Export" button (real UI: visible text button, not an icon glyph).
+    await page.getByText("Export", { exact: true }).first().click();
     await page.waitForTimeout(1_000);
     await shot(page, "06-download-menu");
 
@@ -167,20 +156,13 @@ async function main() {
 }
 
 /* Drive the on-page date selector. Yoco's app is React Native Web, so
-   everything is a styled div — we go by visible text. */
+   everything is a styled div — we go by visible text. The report page has
+   a fixed row of period buttons (Today / Yesterday / This week / Last week /
+   This month / Last month / Custom range / Location) — click "Custom range"
+   directly instead of scanning for whichever period happens to be active. */
 async function setDateRangeViaUi(page, start, end) {
-  // Open the period/date dropdown (shows e.g. "Last week").
-  const trigger = page
-    .getByText(/last week|this week|today|yesterday|custom/i)
-    .first();
-  await trigger.click();
+  await page.getByText("Custom range", { exact: true }).first().click();
   await page.waitForTimeout(800);
-
-  const custom = page.getByText(/custom/i).first();
-  if (await custom.count()) {
-    await custom.click();
-    await page.waitForTimeout(800);
-  }
 
   // Calendar day cells: click start then end day numbers.
   for (const d of [start, end]) {
