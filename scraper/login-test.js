@@ -3,8 +3,11 @@
 // Runs ONLY the login portion of scrape.js, and after every step:
 //   - saves a full-page screenshot to debug/live/step-NN-<name>.png
 //   - updates debug/live/status.json (step list, state, timestamps)
-//   - if LIVE_DEBUG_PUSH=1, commits + force-pushes debug/live to the
-//     `debug-live` branch so debug.html can poll it in near-real-time.
+//   - if LIVE_DEBUG_PUSH=1, commits + pushes debug/live straight to the
+//     branch that triggered this run (normally `main`, already your GitHub
+//     Pages source) so debug.html can poll it same-origin — this works
+//     whether the repo is public or private, since it never depends on
+//     an unauthenticated raw.githubusercontent.com fetch.
 //
 // Env: YOCO_EMAIL, YOCO_PASSWORD, LIVE_DEBUG_PUSH (optional)
 
@@ -34,6 +37,8 @@ const status = {
 let stepNo = 0;
 let lastT = Date.now();
 
+const BRANCH = process.env.GITHUB_REF_NAME || "main";
+
 function publish() {
   writeFileSync(join(LIVE_DIR, "status.json"), JSON.stringify(status, null, 2));
   if (!PUSH) return;
@@ -42,7 +47,10 @@ function publish() {
       [
         "git add -A debug/live",
         `git -c user.name=login-test -c user.email=actions@github.com commit -m "debug: step ${stepNo}" --allow-empty -q`,
-        "git push origin HEAD:refs/heads/debug-live --force -q",
+        // Pull --rebase first in case scrape.yml committed to the same
+        // branch concurrently (different files, so rebase is conflict-free).
+        `git pull --rebase origin ${BRANCH} -q`,
+        `git push origin HEAD:refs/heads/${BRANCH} -q`,
       ].join(" && "),
       { cwd: join(__dirname, ".."), stdio: "inherit" }
     );

@@ -19,7 +19,6 @@
   .badge.passed  { color: var(--green); border-color: var(--green); }
   .badge.failed  { color: var(--red);   border-color: var(--red); }
   .badge.idle    { color: var(--dim); }
-  header input { margin-left: auto; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 10px; width: 240px; }
 
   .split { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
   @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
@@ -54,7 +53,6 @@
   <header>
     <h1>⚡ Login flow — live debug</h1>
     <span id="state" class="badge idle">waiting…</span>
-    <input id="repo" placeholder="owner/repo" title="GitHub repo (owner/name)" />
   </header>
 
   <div class="split">
@@ -78,29 +76,11 @@
   </div>
 
 <script>
-  // The workflow force-pushes debug/live/* to the `debug-live` branch after
-  // every step; this page polls raw.githubusercontent.com for it.
-  const params = new URLSearchParams(location.search);
-  const repoInput = document.getElementById("repo");
-  repoInput.value =
-    params.get("repo") ||
-    localStorage.getItem("debugRepo") ||
-    autoDetectRepo() ||
-    "";
-  repoInput.addEventListener("change", () => {
-    localStorage.setItem("debugRepo", repoInput.value.trim());
-    poll();
-  });
-
-  function autoDetectRepo() {
-    // On GitHub Pages: https://<owner>.github.io/<repo>/debug.html
-    const m = location.hostname.match(/^([^.]+)\.github\.io$/);
-    const seg = location.pathname.split("/").filter(Boolean)[0];
-    return m && seg ? `${m[1]}/${seg}` : null;
-  }
-
-  const base = () =>
-    `https://raw.githubusercontent.com/${repoInput.value.trim()}/debug-live/debug/live`;
+  // The workflow commits debug/live/* straight to this same branch (your
+  // GitHub Pages source) after every step, so this page just polls its own
+  // origin — no repo/token needed, and it works the same whether the repo
+  // is public or private.
+  const base = () => new URL("debug/live", location.href).href;
 
   const $state = document.getElementById("state");
   const $steps = document.getElementById("steps");
@@ -114,7 +94,6 @@
   let lastStatus = null;
 
   async function poll() {
-    if (!repoInput.value.includes("/")) return;
     try {
       const res = await fetch(`${base()}/status.json?t=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(res.status);

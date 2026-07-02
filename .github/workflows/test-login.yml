@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write # needed to push live debug screenshots to the debug-live branch
+  contents: write # needed to push live debug screenshots to the Pages branch (usually main)
 
 jobs:
   login-test:
@@ -20,6 +20,14 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
+      - name: Print live debug URL
+        run: |
+          echo "### 🔴 Live debug view" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Watch this run step-by-step: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/debug.html" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Works even on a private repo — screenshots are pushed to this branch (your Pages source) and served same-origin." >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/setup-node@v4
         with:
