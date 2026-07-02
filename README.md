@@ -16,20 +16,34 @@ data/latest.json  ──▶  index.html (the dashboard)
 ```
 
 - **`index.html`** — the dashboard. Shows demo data until a scrape has run, then switches to live data automatically.
-- **`setup.html`** — enter your Yoco email/password. They're encrypted in the browser with the repo's public key (libsodium sealed box) and stored as GitHub Actions secrets `YOCO_EMAIL` / `YOCO_PASSWORD`. Nothing is ever committed or stored locally.
+- **`setup.html`** — instructions for setting the required GitHub Actions secrets. Does **not** ask for a GitHub token; secrets are set from the CLI or the repo's Settings UI, never through a web page.
 - **`scraper/scrape.js`** — Playwright login + API-response capture, normalised into `data/latest.json`.
+- **`scraper/login-test.js`** — isolated login-only test used by `test-login.yml`, publishes step-by-step screenshots for live debugging.
 - **`.github/workflows/scrape.yml`** — runs daily at 06:00 SAST and on demand, commits the fresh JSON.
+- **`.github/workflows/test-login.yml`** — on demand / on scraper changes, runs the login test and uploads screenshots + a session video as a build artifact.
+- **`debug.html`** — side-by-side live view of the login test: agent screenshots on the left (with a loading spinner while a step is in flight), step timeline on the right. Requires the repo to be public (see Setup).
+
+## Required secrets
+
+| Secret | Used by | Value |
+|---|---|---|
+| `YOCO_EMAIL` | `scrape.yml`, `test-login.yml` | Your Yoco login email |
+| `YOCO_PASSWORD` | `scrape.yml`, `test-login.yml` | Your Yoco login password |
+
+No GitHub token needs to be created. Both workflows use the automatic, repo-scoped `GITHUB_TOKEN` that GitHub Actions injects into every run (see `permissions: contents: write` in each workflow) — it's short-lived and never leaves Actions.
 
 ## Setup
 
 1. Push this repo to GitHub and enable **GitHub Pages** (Settings → Pages → deploy from `main`).
-2. Open `setup.html` on your Pages site and connect your Yoco account — or set secrets manually:
+2. Set the two secrets above:
    ```sh
    gh secret set YOCO_EMAIL
    gh secret set YOCO_PASSWORD
    gh workflow run scrape.yml
    ```
+   (or Settings → Secrets and variables → Actions → New repository secret)
 3. The dashboard flips from "Demo data" to "Live" once `data/latest.json` lands.
+4. To debug login issues: `gh workflow run test-login.yml`, then open `debug.html` on your Pages site to watch it run in near-real-time.
 
 ## Notes
 

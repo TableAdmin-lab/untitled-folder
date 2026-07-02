@@ -1,0 +1,61 @@
+name: Scrape Yoco data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *" # 06:00 SAST (UTC+2, no DST)
+
+# Queue runs one at a time instead of overlapping — only one login/scrape
+# should be in flight against a given Yoco account's secrets at once.
+# cancel-in-progress is false on purpose: a queued run WAITS for the
+# current one to finish rather than killing it or racing it.
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+
+      - name: Install dependencies
+        working-directory: scraper
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: scraper
+        run: npx playwright install --with-deps chromium
+
+      - name: Scrape
+        working-directory: scraper
+        env:
+          YOCO_EMAIL: ${{ secrets.YOCO_EMAIL }}
+          YOCO_PASSWORD: ${{ secrets.YOCO_PASSWORD }}
+        run: npm run scrape
+
+      - name: Commit updated data
+        run: |
+          git config user.name "yoco-pulse-bot"
+          git config user.email "actions@github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "data: refresh report"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Upload debug screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-debug
+          path: debug/*.png
+          retention-days: 7

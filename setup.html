@@ -4,11 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Connect Yoco — Yoco Pulse</title>
-<!-- tweetnacl: used to seal secrets with the repo's public key before they
-     leave the browser. Credentials go ONLY to GitHub's encrypted-secrets API. -->
-<script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.1/nacl-util.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tweetnacl-sealedbox-js@1.2.0/sealedbox.web.js"></script>
 <style>
   :root{--navy:#071C39;--blue:#0072CE;--teal:#00B8A9;--ink:#12263A;--ink2:#5B6B7E;--ink3:#93A1B0;
         --bg:#F4F7FB;--card:#fff;--line:#E4EAF2;--radius:18px;
@@ -23,40 +18,31 @@
   .wrap{max-width:560px;margin:-64px auto 60px;padding:0 20px}
   .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:30px}
   label{display:block;font-size:13px;font-weight:700;color:var(--ink2);margin:18px 0 6px}
+  label:first-of-type{margin-top:0}
   input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;transition:.15s}
   input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,114,206,.14)}
-  .hint{font-size:12.5px;color:var(--ink3);margin-top:5px}
-  .hint a{color:var(--blue)}
   button{width:100%;margin-top:26px;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px;font:700 15px/1 inherit;cursor:pointer;transition:.15s}
   button:hover{background:#0B3B74}
-  button:disabled{opacity:.55;cursor:wait}
-  .msg{margin-top:16px;border-radius:12px;padding:13px 15px;font-size:13.5px;display:none}
-  .msg.ok{display:block;background:#E7F7F0;color:#0B7B4B}
-  .msg.err{display:block;background:#FCEBEC;color:#B4232A}
+  .out{margin-top:20px;display:none}
+  .out.show{display:block}
+  .out h2{font-size:13px;color:var(--ink2);margin-bottom:8px}
+  pre{background:var(--bg);border-radius:12px;padding:14px;font-size:12.5px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+  .copy{width:auto;margin-top:10px;background:#fff;color:var(--navy);border:1.5px solid var(--line);padding:9px 16px;font-size:13px}
+  .copy:hover{background:var(--bg)}
   .sec{display:flex;gap:11px;background:#F0F6FD;border-radius:12px;padding:13px 15px;font-size:13px;color:var(--ink2);margin-top:22px}
-  .divider{display:flex;align-items:center;gap:12px;color:var(--ink3);font-size:12px;font-weight:700;margin:26px 0 4px}
-  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
-  ol{margin:10px 0 0 18px;font-size:13.5px;color:var(--ink2)}
-  ol li{margin:6px 0}
-  code{background:var(--bg);border-radius:6px;padding:2px 6px;font-size:12.5px}
   .back{display:inline-block;margin-top:18px;color:#A9C4E4;text-decoration:none;font-size:13.5px}
+  a{color:var(--blue)}
 </style>
 </head>
 <body>
 <div class="top">
   <div class="logo"><span class="dot">⚡</span>Yoco Pulse</div>
   <h1>Connect your Yoco account</h1>
-  <p>Your login is encrypted in this browser and stored as GitHub Actions secrets. It never touches the repo, the dashboard, or any other server.</p>
+  <p>Nothing here touches the network. Enter your login, then run the generated commands yourself to save them as GitHub secrets.</p>
   <a class="back" href="index.html">← Back to dashboard</a>
 </div>
 
 <div class="wrap"><div class="card">
-  <label for="owner">GitHub repository</label>
-  <input id="owner" placeholder="owner/repo" value="TableAdmin-lab/untitled-folder">
-
-  <label for="pat">GitHub token</label>
-  <input id="pat" type="password" placeholder="github_pat_… or ghp_…">
-  <div class="hint">A <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained token</a> scoped to this repo with <b>Secrets: read &amp; write</b>. Used once, never stored.</div>
 
   <label for="email">Yoco email</label>
   <input id="email" type="email" autocomplete="off" placeholder="you@business.co.za">
@@ -64,64 +50,41 @@
   <label for="pw">Yoco password</label>
   <input id="pw" type="password" autocomplete="new-password" placeholder="••••••••••">
 
-  <button id="go">Encrypt &amp; save to GitHub secrets</button>
-  <div class="msg" id="msg"></div>
+  <button id="go">Generate setup commands</button>
 
-  <div class="sec">🔒 <span>Secrets are sealed with the repository’s public key (libsodium sealed box) before leaving your browser — the same encryption the GitHub CLI uses. Then the nightly scraper reads them inside GitHub Actions only.</span></div>
+  <div class="out" id="out">
+    <h2>Run these in a terminal, in this repo (requires the GitHub CLI, <code>gh auth login</code> once):</h2>
+    <pre id="cmd"></pre>
+    <button class="copy" id="copyBtn">Copy commands</button>
+  </div>
 
-  <div class="divider">PREFER THE TERMINAL?</div>
-  <ol>
-    <li>Run <code>gh secret set YOCO_EMAIL</code> and <code>gh secret set YOCO_PASSWORD</code> in the repo.</li>
-    <li>Trigger the workflow: <code>gh workflow run scrape.yml</code>.</li>
-  </ol>
+  <div class="sec">🔒 <span>Your email and password are only used to build the command below, in your browser — they are never sent anywhere. Running the commands stores them as encrypted GitHub Actions secrets (<code>YOCO_EMAIL</code>, <code>YOCO_PASSWORD</code>), readable only inside your workflow runs.</span></div>
+
 </div></div>
 
 <script>
 const $ = id => document.getElementById(id);
-const msg = (cls, html) => { const m=$("msg"); m.className="msg "+cls; m.innerHTML=html; };
 
-$("go").onclick = async () => {
-  const repo = $("owner").value.trim(), pat = $("pat").value.trim(),
-        email = $("email").value.trim(), pw = $("pw").value;
-  if(!/^[^/]+\/[^/]+$/.test(repo)) return msg("err","Repository must look like <b>owner/repo</b>.");
-  if(!pat || !email || !pw) return msg("err","Please fill in every field.");
+$("go").onclick = () => {
+  const email = $("email").value.trim();
+  const pw = $("pw").value;
+  if (!email || !pw) return;
 
-  const btn = $("go"); btn.disabled = true; btn.textContent = "Encrypting & saving…";
-  const gh = (path, opts={}) => fetch(`https://api.github.com/repos/${repo}${path}`, {
-    ...opts, headers: { Authorization:`Bearer ${pat}`, Accept:"application/vnd.github+json",
-                        "X-GitHub-Api-Version":"2022-11-28", ...(opts.headers||{}) }});
-  try {
-    const keyRes = await gh("/actions/secrets/public-key");
-    if(!keyRes.ok) throw new Error(keyRes.status===404 ? "Repo not found or token lacks access."
-                                  : `GitHub said ${keyRes.status} fetching the public key.`);
-    const { key, key_id } = await keyRes.json();
-    const pub = nacl.util.decodeBase64(key);
+  const esc = v => `'${v.replace(/'/g, `'\\''`)}'`;
+  const cmd =
+`printf '%s' ${esc(email)} | gh secret set YOCO_EMAIL
+printf '%s' ${esc(pw)} | gh secret set YOCO_PASSWORD
+gh workflow run scrape.yml`;
 
-    // libsodium sealed box (blake2b nonce) — matches what GitHub expects
-    const seal = (value) =>
-      nacl.util.encodeBase64(sealedBox.seal(nacl.util.decodeUTF8(value), pub));
+  $("cmd").textContent = cmd;
+  $("out").classList.add("show");
+  $("pw").value = "";
+};
 
-    for (const [name, value] of [["YOCO_EMAIL", email], ["YOCO_PASSWORD", pw]]) {
-      const r = await gh(`/actions/secrets/${name}`, { method:"PUT",
-        body: JSON.stringify({ encrypted_value: seal(value), key_id }) });
-      if(!r.ok) throw new Error(`GitHub said ${r.status} saving ${name}. Check the token has Secrets write access.`);
-    }
-
-    // kick off a scrape right away (best effort — needs Actions write scope)
-    let kicked = false;
-    const wf = await gh(`/actions/workflows/scrape.yml/dispatches`, { method:"POST",
-      body: JSON.stringify({ ref:"main" }) });
-    kicked = wf.ok;
-
-    $("pw").value = $("pat").value = "";
-    msg("ok", `✅ Secrets saved to <b>${repo}</b>.` +
-      (kicked ? " A scrape has been triggered — your dashboard goes live when it finishes (a few minutes)."
-              : " Now run the <b>Scrape Yoco data</b> workflow from the repo’s Actions tab."));
-  } catch(e) {
-    msg("err","❌ "+e.message);
-  } finally {
-    btn.disabled = false; btn.textContent = "Encrypt & save to GitHub secrets";
-  }
+$("copyBtn").onclick = () => {
+  navigator.clipboard.writeText($("cmd").textContent);
+  $("copyBtn").textContent = "Copied!";
+  setTimeout(() => ($("copyBtn").textContent = "Copy commands"), 1500);
 };
 </script>
 </body>
