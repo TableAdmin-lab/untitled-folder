@@ -24,6 +24,13 @@
       "shot": "step-03-password-filled.png",
       "at": "2026-07-02T15:59:02.367Z",
       "ms": 1817
+    },
+    {
+      "n": 4,
+      "name": "logged-in",
+      "shot": "step-04-logged-in.png",
+      "at": "2026-07-02T15:59:12.501Z",
+      "ms": 10134
     }
   ]
 }
