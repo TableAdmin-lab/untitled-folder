@@ -590,9 +590,12 @@ function delta(cur,prev){
   return `<span class="${up?'up':'down'}">${up?"▲":"▼"} ${Math.abs(p).toFixed(1)}%</span> vs prior period`;
 }
 function renderTiles(days,prev){
-  if((!days || !days.length) && DATA.totals){
-    const rev=DATA.totals.revenue||0, qty=DATA.totals.quantity||0;
-    const avg=qty?rev/qty:0, top=(DATA.topProducts||[])[0];
+  if(!days || !days.length){
+    const totals = (DATA && DATA.totals) || { revenue: 0, quantity: 0 };
+    const rev = totals.revenue || 0;
+    const qty = totals.quantity || 0;
+    const avg = qty ? rev / qty : 0;
+    const top = (DATA && DATA.topProducts || [])[0];
     document.getElementById("tiles").innerHTML=`
       <div class="tile hero"><div class="k">Report revenue</div><div class="v">${ZAR(rev)}</div>
         <div class="d">Products report</div></div>
