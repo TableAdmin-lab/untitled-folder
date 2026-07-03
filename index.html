@@ -340,17 +340,26 @@ function closeConnect(){
   if(location.hash==="#connect") history.replaceState(null,"",location.pathname+location.search);
 }
 async function initData(){
-  setProgress(18,"Fetching live report","data/latest.json");
-  try{
-    const r=await fetch("data/latest.json",{cache:"no-store"});
-    if(!r.ok) throw new Error(r.status);
-    const d=await r.json();
-    if(!(d.days?.length || d.topProducts?.length)) throw new Error("empty report");
+  try {
+    setProgress(18,"Initializing live dashboard...","Fetching from data branch");
+    let d;
+    if (githubRepoSlug() === "OWNER/REPO") {
+      const r=await fetch("data/latest.json",{cache:"no-store"});
+      d=await r.json();
+    } else {
+      d = await fetchLiveData();
+    }
+    
+    if (d.mode === "empty" || Object.keys(d).length === 0) {
+      throw new Error("empty report");
+    }
+    
     setProgress(76,"Preparing live data","Rendering Yoco report");
-    LIVE=d; DATA=d; DATA.mode="live"; boot("live");
-  }catch{
+    DATA=d; DATA.mode="live"; boot("live");
+  } catch(e){
+    console.error("Init fallback to empty state",e);
     setProgress(76,"Ready","No live report found");
-    LIVE=null; DATA={ mode: "empty" }; boot("empty");
+    boot("empty");
   }
 }
 
@@ -460,14 +469,25 @@ function setConnectStatus(message, type=""){
 }
 async function fetchLiveData(){
   const repo=githubRepoSlug();
-  const url = repo==="OWNER/REPO"
-    ? `data/latest.json?t=${Date.now()}`
-    : `https://raw.githubusercontent.com/${repo}/main/data/latest.json?t=${Date.now()}`;
+  let url = `data/latest.json?t=${Date.now()}`;
+  if(repo!=="OWNER/REPO"){
+    try {
+      const branchRes = await fetch(`https://api.github.com/repos/${repo}/commits/data`,{ cache:"no-store" });
+      if(branchRes.ok){
+        const branchData = await branchRes.json();
+        url = `https://raw.githubusercontent.com/${repo}/${branchData.sha}/data/latest.json`;
+      } else {
+        url = `https://raw.githubusercontent.com/${repo}/data/data/latest.json?t=${Date.now()}`;
+      }
+    } catch(e) {
+      url = `https://raw.githubusercontent.com/${repo}/data/data/latest.json?t=${Date.now()}`;
+    }
+  }
 
   const r=await fetch(url,{ cache:"no-store" });
   if(!r.ok) throw new Error(String(r.status));
   const d=await r.json();
-  if(!(d.days?.length || d.topProducts?.length)) throw new Error("empty report");
+  if(!(d.days?.length || d.topProducts?.length || d.topBrands?.length || d.topCategories?.length)) throw new Error("empty report");
   return d;
 }
 async function waitForLiveData(lastScrapedTime){
