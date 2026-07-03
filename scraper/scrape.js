@@ -378,37 +378,70 @@ async function setDateRangeViaUi(page, start, end) {
 async function navigateToMonth(page, d) {
   const targetMonth = MONTH_NAMES[d.getUTCMonth()];
   const targetYear = String(d.getUTCFullYear());
-  const backArrow = page
-    .locator('button[style*="width: 36px"][style*="height: 36px"]')
-    .first();
   
-  // Wait up to 15s for the datepicker calendar overlay back button to be visible on screen
-  await backArrow.waitFor({ state: "visible", timeout: 15000 });
-
-  // Locate the calendar popup container element that wraps the backArrow
-  const calendar = page.locator('div').filter({ has: backArrow }).last();
-
-  // These buttons render as e.g. "July" followed by a hidden MaterialIcons
-  // glyph character (invisible on screen but present in textContent), so
-  // exact/anchored text matching never hits — match the substring instead.
-  const monthBtn = calendar
+  // Wait up to 15s for the datepicker calendar overlay to be visible.
+  // We identify it by waiting for a month name button to appear.
+  const anyMonthBtn = page
     .locator('button[role="button"]')
     .filter({ hasText: new RegExp(MONTH_NAMES.join("|")) })
     .first();
-  const yearBtn = calendar
-    .locator('button[role="button"]')
-    .filter({ hasText: /\d{4}/ })
-    .first();
+  await anyMonthBtn.waitFor({ state: "visible", timeout: 15000 });
+
+  // Locate the calendar popup container element. It must be the deepest div that contains
+  // both the month button and the day cells.
+  const calendar = page.locator('div')
+    .filter({ has: page.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) }) })
+    .filter({ has: page.locator('div.r-1awozwy') })
+    .last();
+
+  const calendarArrows = calendar.locator('button[style*="width: 36px"][style*="height: 36px"]');
+  const leftArrow = calendarArrows.first();
+  const rightArrow = calendarArrows.last();
+
+  const monthBtns = calendar.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) });
+  const yearBtns = calendar.locator('button[role="button"]').filter({ hasText: /\d{4}/ });
 
   for (let i = 0; i < 24; i++) {
-    const monthText = (await monthBtn.textContent()) || "";
-    const yearText = (await yearBtn.textContent()) || "";
-    const curMonth = MONTH_NAMES.find((m) => monthText.includes(m));
-    const curYear = yearText.match(/\d{4}/)?.[0];
-    if (curMonth === targetMonth && curYear === targetYear) return;
-    await backArrow.click();
+    const monthCount = await monthBtns.count();
+    const yearCount = await yearBtns.count();
+    
+    let found = false;
+    let currentMonthDate = null;
+
+    for (let j = 0; j < monthCount; j++) {
+      const mText = (await monthBtns.nth(j).textContent()) || "";
+      const yText = j < yearCount ? ((await yearBtns.nth(j).textContent()) || "") : ((await yearBtns.first().textContent()) || "");
+      
+      const mMatch = MONTH_NAMES.find((m) => mText.includes(m));
+      const yMatch = yText.match(/\d{4}/)?.[0];
+      
+      if (mMatch && yMatch) {
+        if (!currentMonthDate) {
+           currentMonthDate = new Date(`${mMatch} 1, ${yMatch}`);
+        }
+        if (mMatch === targetMonth && yMatch === targetYear) {
+          found = true;
+          break;
+        }
+      }
+    }
+    
+    if (found) return;
+
+    if (currentMonthDate) {
+      const targetDate = new Date(`${targetMonth} 1, ${targetYear}`);
+      if (targetDate < currentMonthDate) {
+        await leftArrow.click();
+      } else {
+        await rightArrow.click();
+      }
+    } else {
+      await leftArrow.click();
+    }
+    
     await page.waitForTimeout(400); // Slightly longer wait for React Native Web UI transitions
   }
+
   await debugPage(page, `05x-missing-month-${targetMonth}-${targetYear}`, {
     phase: "missing-target-month",
     targetMonth,
@@ -422,8 +455,12 @@ async function navigateToMonth(page, d) {
    only cells without it so we never land on the wrong month's "30". */
 async function clickDay(page, d) {
   const day = String(d.getUTCDate());
-  const backArrow = page.locator('button[style*="width: 36px"][style*="height: 36px"]').first();
-  const calendar = page.locator('div').filter({ has: backArrow }).last();
+  
+  const calendar = page.locator('div')
+    .filter({ has: page.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) }) })
+    .filter({ has: page.locator('div.r-1awozwy') })
+    .last();
+    
   const cell = calendar
     .locator("div.r-1awozwy:not(.r-eu3ka)")
     .filter({ hasText: new RegExp(`^${day}$`) })
