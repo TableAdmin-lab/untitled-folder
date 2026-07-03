@@ -381,14 +381,21 @@ async function navigateToMonth(page, d) {
   const backArrow = page
     .locator('button[style*="width: 36px"][style*="height: 36px"]')
     .first();
+  
+  // Wait up to 15s for the datepicker calendar overlay back button to be visible on screen
+  await backArrow.waitFor({ state: "visible", timeout: 15000 });
+
+  // Locate the calendar popup container element that wraps the backArrow
+  const calendar = page.locator('div').filter({ has: backArrow }).last();
+
   // These buttons render as e.g. "July" followed by a hidden MaterialIcons
   // glyph character (invisible on screen but present in textContent), so
   // exact/anchored text matching never hits — match the substring instead.
-  const monthBtn = page
+  const monthBtn = calendar
     .locator('button[role="button"]')
     .filter({ hasText: new RegExp(MONTH_NAMES.join("|")) })
     .first();
-  const yearBtn = page
+  const yearBtn = calendar
     .locator('button[role="button"]')
     .filter({ hasText: /\d{4}/ })
     .first();
@@ -400,7 +407,7 @@ async function navigateToMonth(page, d) {
     const curYear = yearText.match(/\d{4}/)?.[0];
     if (curMonth === targetMonth && curYear === targetYear) return;
     await backArrow.click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(400); // Slightly longer wait for React Native Web UI transitions
   }
   await debugPage(page, `05x-missing-month-${targetMonth}-${targetYear}`, {
     phase: "missing-target-month",
@@ -415,7 +422,9 @@ async function navigateToMonth(page, d) {
    only cells without it so we never land on the wrong month's "30". */
 async function clickDay(page, d) {
   const day = String(d.getUTCDate());
-  const cell = page
+  const backArrow = page.locator('button[style*="width: 36px"][style*="height: 36px"]').first();
+  const calendar = page.locator('div').filter({ has: backArrow }).last();
+  const cell = calendar
     .locator("div.r-1awozwy:not(.r-eu3ka)")
     .filter({ hasText: new RegExp(`^${day}$`) })
     .first();
@@ -432,7 +441,7 @@ async function clickDay(page, d) {
 
   try {
     // fallback if the class name ever changes
-    await page.getByText(day, { exact: true }).first().click();
+    await calendar.getByText(day, { exact: true }).first().click();
   } catch (e) {
     throw new Error(`clickDay: could not click ${ymd(d)} (${e.message})`);
   }
