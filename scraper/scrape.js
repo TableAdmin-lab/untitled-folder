@@ -380,26 +380,18 @@ async function navigateToMonth(page, d) {
   const targetYear = String(d.getUTCFullYear());
   
   // Wait up to 15s for the datepicker calendar overlay to be visible.
-  // We identify it by waiting for a month name button to appear.
   const anyMonthBtn = page
     .locator('button[role="button"]')
     .filter({ hasText: new RegExp(MONTH_NAMES.join("|")) })
     .first();
   await anyMonthBtn.waitFor({ state: "visible", timeout: 15000 });
 
-  // Locate the calendar popup container element. It must be the deepest div that contains
-  // both the month button and the day cells.
-  const calendar = page.locator('div')
-    .filter({ has: page.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) }) })
-    .filter({ has: page.locator('div.r-1awozwy') })
-    .last();
-
-  const calendarArrows = calendar.locator('button[style*="width: 36px"][style*="height: 36px"]');
+  const calendarArrows = page.locator('button[style*="width: 36px"][style*="height: 36px"]');
   const leftArrow = calendarArrows.first();
   const rightArrow = calendarArrows.last();
 
-  const monthBtns = calendar.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) });
-  const yearBtns = calendar.locator('button[role="button"]').filter({ hasText: /\d{4}/ });
+  const monthBtns = page.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) });
+  const yearBtns = page.locator('button[role="button"]').filter({ hasText: /\d{4}/ });
 
   for (let i = 0; i < 24; i++) {
     const monthCount = await monthBtns.count();
@@ -451,20 +443,16 @@ async function navigateToMonth(page, d) {
 }
 
 /* Day cells belonging to the previous/next month (shown greyed-out to fill
-   the grid) carry an extra "r-eu3ka" class that in-month days don't — click
-   only cells without it so we never land on the wrong month's "30". */
+   the grid) carry an extra class. We use a fallback if the class changes. */
 async function clickDay(page, d) {
   const day = String(d.getUTCDate());
   
-  const calendar = page.locator('div')
-    .filter({ has: page.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) }) })
-    .filter({ has: page.locator('div.r-1awozwy') })
-    .last();
-    
-  const cell = calendar
+  // Try the original class name first
+  const cell = page
     .locator("div.r-1awozwy:not(.r-eu3ka)")
     .filter({ hasText: new RegExp(`^${day}$`) })
     .first();
+    
   if (await cell.count()) {
     await cell.click();
     await page.waitForTimeout(400);
@@ -478,7 +466,7 @@ async function clickDay(page, d) {
 
   try {
     // fallback if the class name ever changes
-    await calendar.getByText(day, { exact: true }).first().click();
+    await page.getByText(day, { exact: true }).last().click();
   } catch (e) {
     throw new Error(`clickDay: could not click ${ymd(d)} (${e.message})`);
   }
