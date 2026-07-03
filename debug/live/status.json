@@ -17,6 +17,13 @@
       "shot": "step-02-email-filled.png",
       "at": "2026-07-03T22:50:15.605Z",
       "ms": 1084
+    },
+    {
+      "n": 3,
+      "name": "password-filled",
+      "shot": "step-03-password-filled.png",
+      "at": "2026-07-03T22:50:16.779Z",
+      "ms": 1174
     }
   ]
 }
