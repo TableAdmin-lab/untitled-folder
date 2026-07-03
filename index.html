@@ -19,10 +19,10 @@
   aside{width:232px;flex-shrink:0;background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;padding:28px 20px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
   .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em;margin-bottom:26px}
   .logo .dot{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--blue),var(--teal));display:grid;place-items:center;font-size:17px}
-  aside a{display:flex;align-items:center;gap:11px;color:#B9C7DA;text-decoration:none;padding:10px 12px;border-radius:11px;font-weight:600;font-size:14px;transition:.15s}
-  aside a:hover{background:rgba(255,255,255,.07);color:#fff}
+  aside a,aside button{display:flex;align-items:center;gap:11px;color:#B9C7DA;text-decoration:none;padding:10px 12px;border-radius:11px;font-weight:600;font-size:14px;transition:.15s;background:none;border:0;font:inherit;cursor:pointer;text-align:left}
+  aside a:hover,aside button:hover{background:rgba(255,255,255,.07);color:#fff}
   aside a.active{background:rgba(0,114,206,.28);color:#fff}
-  aside a svg{width:18px;height:18px;flex-shrink:0}
+  aside a svg,aside button svg{width:18px;height:18px;flex-shrink:0}
   .side-foot{margin-top:auto;font-size:12px;color:#7E90A8;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
   .side-foot b{color:#B9C7DA;display:block;margin-bottom:2px}
 
@@ -36,9 +36,57 @@
   @keyframes pulse{70%{box-shadow:0 0 0 8px rgba(0,184,169,0)}}
   .badge.demo .pulse{background:var(--amber);animation:none}
 
+  .actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-6px 0 18px;flex-wrap:wrap}
+  .action-group{display:flex;gap:8px;flex-wrap:wrap}
+  .action{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 13px;font:700 13px/1 inherit;color:var(--ink-2);text-decoration:none;cursor:pointer;box-shadow:var(--shadow)}
+  .action.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+  .action:hover{border-color:#C8D5E4;color:var(--ink)}
+  .action.primary:hover{background:#0B3B74;color:#fff}
+  .action svg{width:16px;height:16px;flex:none}
+  .connect-state{font-size:12.5px;color:var(--ink-3);font-weight:600}
   .filters{display:flex;gap:8px;margin-bottom:20px}
   .filters button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 15px;font:600 13px/1 inherit;color:var(--ink-2);cursor:pointer}
   .filters button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+  /* ---------- loading ---------- */
+  .loader{position:fixed;inset:0;background:rgba(244,247,251,.86);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+  .loader.show{display:flex}
+  .loadbox{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 22px 60px rgba(7,28,57,.16)}
+  .load-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .ring{width:42px;height:42px;border-radius:50%;background:conic-gradient(var(--blue) var(--p,0%),#E8EEF6 0);display:grid;place-items:center;flex:none;transition:background .2s}
+  .ring::after{content:"";width:30px;height:30px;border-radius:50%;background:#fff}
+  .load-title{font-weight:800;font-size:16px}
+  .load-stage{font-size:13px;color:var(--ink-2);margin-top:2px}
+  .bar{height:8px;background:#E8EEF6;border-radius:999px;overflow:hidden}
+  .bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--teal));border-radius:999px;transition:width .25s ease}
+  .load-foot{display:flex;justify-content:space-between;margin-top:10px;font-size:12px;font-weight:700;color:var(--ink-3);font-variant-numeric:tabular-nums}
+
+  /* ---------- connect modal ---------- */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(7,28,57,.42);backdrop-filter:blur(8px);z-index:30}
+  .modal.show{display:flex}
+  .modal-card{width:min(560px,100%);background:var(--card);border-radius:18px;box-shadow:0 28px 80px rgba(7,28,57,.28);border:1px solid var(--line);overflow:hidden}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px;border-bottom:1px solid var(--line)}
+  .modal-head h2{font-size:20px;letter-spacing:-.02em}
+  .modal-head p{font-size:13px;color:var(--ink-2);margin-top:4px}
+  .icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink-2);display:grid;place-items:center;cursor:pointer;flex:none}
+  .icon-btn svg{width:17px;height:17px}
+  .modal-body{padding:22px 24px}
+  .steps-connect{display:grid;gap:12px;margin-bottom:18px}
+  .step{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#FBFCFE}
+  .step-num{width:30px;height:30px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800}
+  .step b{display:block;font-size:14px;margin-bottom:2px}
+  .step span{font-size:13px;color:var(--ink-2)}
+  .modal-actions{display:flex;gap:9px;flex-wrap:wrap}
+  .note{margin-top:14px;color:var(--ink-3);font-size:12.5px;line-height:1.45}
+  .login-form{display:grid;gap:12px;margin-bottom:16px}
+  .field label{display:block;font-size:12.5px;font-weight:800;color:var(--ink-2);margin-bottom:5px}
+  .field input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit;color:var(--ink);background:#fff}
+  .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,114,206,.13)}
+  .connect-status{display:none;margin-top:14px;border:1px solid var(--line);border-radius:12px;background:#FBFCFE;padding:12px 13px;font-size:13px;color:var(--ink-2);line-height:1.45}
+  .connect-status.show{display:block}
+  .connect-status.success{border-color:rgba(0,184,169,.35);background:#F0FFFC;color:#0B6B62}
+  .connect-status.error{border-color:rgba(180,35,42,.28);background:#FFF5F5;color:#9F1D24}
+  .action[disabled]{opacity:.6;cursor:not-allowed}
 
   /* ---------- stat tiles ---------- */
   .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:16px;margin-bottom:22px}
@@ -89,7 +137,7 @@
 <aside>
   <div class="logo"><span class="dot">⚡</span>Yoco&nbsp;Pulse</div>
   <a class="active" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
-  <a href="setup.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.4a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2 1.2l.4 2.4h4l.4-2.4a7 7 0 0 0 2-1.2l2.3.9 2-3.4-2-1.5c.06-.4.1-.8.1-1.2z"/></svg>Connect Yoco</a>
+  <button id="openConnectSide" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.4a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2 1.2l.4 2.4h4l.4-2.4a7 7 0 0 0 2-1.2l2.3.9 2-3.4-2-1.5c.06-.4.1-.8.1-1.2z"/></svg>Connect Yoco</button>
   <div class="side-foot"><b>Data pipeline</b>Playwright scraper runs daily on GitHub Actions.</div>
 </aside>
 
@@ -101,6 +149,24 @@
     </div>
     <span class="badge" id="badge"><span class="pulse"></span><span id="badge-txt">Loading…</span></span>
   </header>
+
+  <div class="actions">
+    <div class="action-group">
+      <button class="action" id="openConnectTop" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+        Connect Yoco
+      </button>
+      <a class="action" id="workflowLink" href="https://github.com" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 16 4-4 3 3 5-7"/></svg>
+        Scrape workflow
+      </a>
+      <button class="action primary" id="runSetupTop" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/></svg>
+        Set up automation
+      </button>
+    </div>
+    <div class="connect-state" id="connectState">Automation not connected</div>
+  </div>
 
   <div class="filters" id="filters">
     <button data-days="7">7 days</button>
@@ -138,11 +204,67 @@
   </div>
 </main>
 
+<div class="loader show" id="loader" aria-live="polite" aria-busy="true">
+  <div class="loadbox">
+    <div class="load-top">
+      <div class="ring" id="loadRing"></div>
+      <div>
+        <div class="load-title">Loading dashboard</div>
+        <div class="load-stage" id="loadStage">Starting…</div>
+      </div>
+    </div>
+    <div class="bar"><span id="loadBar"></span></div>
+    <div class="load-foot"><span id="loadDetail">Preparing data</span><span id="loadPct">0%</span></div>
+  </div>
+</div>
+
+<div class="modal" id="connectModal" role="dialog" aria-modal="true" aria-labelledby="connectTitle">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <h2 id="connectTitle">Connect Yoco</h2>
+        <p>Sign in once. The secure backend saves the login and starts the scraper.</p>
+      </div>
+      <button class="icon-btn" id="closeConnect" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="login-form">
+        <div class="field">
+          <label for="yocoEmail">Yoco email</label>
+          <input id="yocoEmail" type="email" autocomplete="username" placeholder="you@business.co.za">
+        </div>
+        <div class="field">
+          <label for="yocoPassword">Yoco password</label>
+          <input id="yocoPassword" type="password" autocomplete="current-password" placeholder="Password">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="action primary" id="connectYocoBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/></svg>
+          <span>Connect and load data</span>
+        </button>
+        <a class="action" id="testLoginLink" href="debug.html" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
+          Login debug
+        </a>
+      </div>
+      <div class="connect-status" id="connectStatus" aria-live="polite"></div>
+      <div class="note">Your Yoco password is sent only to the Vercel backend over HTTPS. The backend stores it as a GitHub Actions secret, triggers the scrape workflow, and does not return or expose the password to this page.</div>
+    </div>
+  </div>
+</div>
+
+<script src="connect-config.js"></script>
 <script>
 const C = { blue:"#0072CE", teal:"#00B8A9", violet:"#7C5CFF", pink:"#E8618C", amber:"#F59E0B",
             ink:"#12263A", ink2:"#5B6B7E", ink3:"#93A1B0", line:"#E4EAF2", navy:"#071C39" };
 const ZAR = n => "R" + n.toLocaleString("en-ZA",{maximumFractionDigits:0});
 const fmtD = s => new Date(s+"T00:00").toLocaleDateString("en-ZA",{day:"numeric",month:"short"});
+const esc = s => String(s ?? "").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+const pause = ms => new Promise(r=>setTimeout(r,ms));
+const CONNECT_ENDPOINT = window.YOCO_CONNECT_ENDPOINT || "/api/connect-yoco";
 
 /* ---------- data: real scrape → fallback demo ---------- */
 function demoData(){
@@ -165,40 +287,188 @@ function demoData(){
       {name:"Cold brew bottle",revenue:19300},{name:"Beanie merch",revenue:12100} ] };
 }
 
-let DATA=null, RANGE=30, LIVE=null;
+let DATA=null, RANGE=30, LIVE=null, MODE="demo", BOOTED=false;
 
-fetch("data/latest.json",{cache:"no-store"})
-  .then(r=>r.ok?r.json():Promise.reject())
-  .then(d=>{
-    if(!(d.days?.length || d.topProducts?.length)) throw 0;
-    LIVE=d;
-    // Merge scraped fields over demo so a products-only report still renders
-    // the trend charts (marked as demo) while products & payments go live.
-    const demo=demoData();
-    DATA={ ...demo, ...Object.fromEntries(Object.entries(d).filter(([k,v])=>Array.isArray(v)?v.length:v!=null)) };
-    boot(true);
-  })
-  .catch(()=>{ DATA=demoData(); boot(false); });
+function setProgress(pct, stage, detail=stage){
+  const p=Math.max(0,Math.min(100,Math.round(pct)));
+  document.getElementById("loader").classList.add("show");
+  document.getElementById("loader").setAttribute("aria-busy","true");
+  document.getElementById("loadStage").textContent=stage;
+  document.getElementById("loadDetail").textContent=detail;
+  document.getElementById("loadPct").textContent=p+"%";
+  document.getElementById("loadBar").style.width=p+"%";
+  document.getElementById("loadRing").style.setProperty("--p",p+"%");
+}
+function hideProgress(){
+  document.getElementById("loader").classList.remove("show");
+  document.getElementById("loader").setAttribute("aria-busy","false");
+}
+function openConnect(){
+  document.getElementById("connectModal").classList.add("show");
+}
+function closeConnect(){
+  document.getElementById("connectModal").classList.remove("show");
+  if(location.hash==="#connect") history.replaceState(null,"",location.pathname+location.search);
+}
+function mergeDashboardData(source, mode){
+  const demo=demoData();
+  if(mode==="demo") return { ...demo, mode, trendIsDemo:false };
+  const merged={ ...demo };
+  Object.entries(source||{}).forEach(([k,v])=>{
+    if(Array.isArray(v)){ if(v.length) merged[k]=v; }
+    else if(v!=null) merged[k]=v;
+  });
+  merged.mode=mode;
+  merged.trendIsDemo=!(source?.days?.length);
+  if(merged.trendIsDemo) merged.days=demo.days;
+  if(!source?.paymentMethods?.length && /products-report/.test(source?.source||"")) {
+    merged.paymentMethods=[];
+  }
+  return merged;
+}
+async function initData(){
+  setProgress(18,"Fetching live report","data/latest.json");
+  try{
+    const r=await fetch("data/latest.json",{cache:"no-store"});
+    if(!r.ok) throw new Error(r.status);
+    const d=await r.json();
+    if(!(d.days?.length || d.topProducts?.length)) throw new Error("empty report");
+    setProgress(76,"Preparing live data","Rendering Yoco report");
+    LIVE=d; DATA=mergeDashboardData(d,"live"); boot("live");
+  }catch{
+    setProgress(76,"Preparing demo data","No live report found");
+    LIVE=null; DATA=mergeDashboardData(demoData(),"demo"); boot("demo");
+  }
+}
 
-function boot(live){
+function boot(mode){
+  MODE=mode;
+  setProgress(100,"Rendering dashboard","Almost ready");
   const b=document.getElementById("badge"), t=document.getElementById("badge-txt");
-  if(live){
+  b.classList.toggle("demo",mode==="demo");
+  if(mode==="live"){
     const r=LIVE.report;
     t.textContent = r
       ? `Live · products report ${fmtD(r.start)} – ${fmtD(r.end)}`
       : "Live · scraped "+new Date(LIVE.scrapedAt).toLocaleString("en-ZA",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+    document.getElementById("connectState").textContent="Live GitHub Actions data";
     if(!LIVE.days?.length) document.getElementById("subline").textContent="Products are live from your latest Yoco report; trend charts show demo data until daily history accumulates.";
   }
-  else { b.classList.add("demo"); t.textContent="Demo data — connect Yoco to go live"; }
+  else {
+    t.textContent="Demo data — connect Yoco to go live";
+    document.getElementById("subline").textContent="Here’s how your business is doing.";
+    document.getElementById("connectState").textContent="Automation not connected";
+  }
   const h=new Date().getHours();
   document.getElementById("greeting").textContent = (h<12?"Good morning":h<17?"Good afternoon":"Good evening")+" 👋";
-  document.getElementById("filters").addEventListener("click",e=>{
-    const btn=e.target.closest("button"); if(!btn) return;
-    document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on",x===btn));
-    RANGE=+btn.dataset.days; render();
-  });
+  if(!BOOTED){
+    document.getElementById("filters").addEventListener("click",e=>{
+      const btn=e.target.closest("button"); if(!btn) return;
+      document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on",x===btn));
+      RANGE=+btn.dataset.days; render();
+    });
+    document.getElementById("openConnectTop").addEventListener("click",openConnect);
+    document.getElementById("runSetupTop").addEventListener("click",openConnect);
+    document.getElementById("openConnectSide").addEventListener("click",openConnect);
+    document.getElementById("closeConnect").addEventListener("click",closeConnect);
+    document.getElementById("connectModal").addEventListener("click",e=>{ if(e.target.id==="connectModal") closeConnect(); });
+    addEventListener("keydown",e=>{ if(e.key==="Escape") closeConnect(); });
+    addEventListener("resize",render);
+    document.getElementById("connectYocoBtn").addEventListener("click",connectYoco);
+    setWorkflowLink();
+    BOOTED=true;
+  }
   render();
-  addEventListener("resize",render);
+  if(location.hash==="#connect") setTimeout(openConnect,260);
+  setTimeout(hideProgress,220);
+}
+
+initData();
+
+function githubRepoSlug(){
+  const host=location.hostname;
+  if(host.endsWith(".github.io")){
+    const owner=host.replace(".github.io","");
+    const repo=location.pathname.split("/").filter(Boolean)[0];
+    if(owner && repo) return `${owner}/${repo}`;
+  }
+  return "OWNER/REPO";
+}
+function setWorkflowLink(){
+  const repo=githubRepoSlug();
+  const link=document.getElementById("workflowLink");
+  link.href = repo==="OWNER/REPO"
+    ? "https://github.com"
+    : `https://github.com/${repo}/actions/workflows/scrape.yml`;
+}
+function setConnectStatus(message, type=""){
+  const box=document.getElementById("connectStatus");
+  box.textContent=message;
+  box.className=`connect-status show${type?` ${type}`:""}`;
+}
+async function fetchLiveData(){
+  const r=await fetch(`data/latest.json?t=${Date.now()}`,{cache:"no-store"});
+  if(!r.ok) throw new Error(String(r.status));
+  const d=await r.json();
+  if(!(d.days?.length || d.topProducts?.length)) throw new Error("empty report");
+  return d;
+}
+async function waitForLiveData(){
+  const deadline=Date.now()+6*60*1000;
+  let attempt=0;
+  while(Date.now()<deadline){
+    attempt++;
+    await pause(attempt===1?12000:18000);
+    setConnectStatus("Scrape is running. Waiting for GitHub Pages to publish the latest data...");
+    try{
+      const d=await fetchLiveData();
+      LIVE=d; DATA=mergeDashboardData(d,"live");
+      boot("live");
+      setConnectStatus("Connected. Live data is ready.", "success");
+      setTimeout(closeConnect,1200);
+      return true;
+    }catch{}
+  }
+  setConnectStatus("The scraper was started, but the dashboard data is not published yet. This can take a few minutes; refresh shortly.", "success");
+  return false;
+}
+async function connectYoco(){
+  const email=document.getElementById("yocoEmail").value.trim();
+  const password=document.getElementById("yocoPassword").value;
+  if(!email || !password){
+    alert("Enter your Yoco email and password first.");
+    return;
+  }
+  if(CONNECT_ENDPOINT.includes("YOUR-VERCEL-PROJECT") || (location.hostname.endsWith(".github.io") && CONNECT_ENDPOINT.startsWith("/"))){
+    setConnectStatus("The Vercel backend URL is not configured yet. Set window.YOCO_CONNECT_ENDPOINT to your Vercel /api/connect-yoco URL.", "error");
+    return;
+  }
+  const btn=document.getElementById("connectYocoBtn");
+  const btnLabel=btn.querySelector("span");
+  btn.disabled=true;
+  btnLabel.textContent="Connecting...";
+  setConnectStatus("Securing credentials and starting the scraper...");
+  document.getElementById("connectState").textContent="Connecting to Yoco";
+  try{
+    const res=await fetch(CONNECT_ENDPOINT,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ email, password })
+    });
+    const payload=await res.json().catch(()=>({}));
+    if(!res.ok || !payload.ok) throw new Error(payload.error || `Connect failed (${res.status})`);
+    document.getElementById("yocoPassword").value="";
+    document.getElementById("connectState").textContent="Scrape workflow started";
+    setConnectStatus("Login saved. The scraper is running now...");
+    await waitForLiveData();
+  }catch(err){
+    setConnectStatus(err.message || "Could not connect Yoco. Please try again.", "error");
+    document.getElementById("connectState").textContent="Connection failed";
+  }finally{
+    document.getElementById("yocoPassword").value="";
+    btn.disabled=false;
+    btnLabel.textContent="Connect and load data";
+  }
 }
 
 function slice(){ return DATA.days.slice(-RANGE); }
@@ -206,8 +476,12 @@ function slice(){ return DATA.days.slice(-RANGE); }
 function render(){
   const days=slice(), prev=DATA.days.slice(-RANGE*2,-RANGE);
   renderTiles(days,prev); renderRevenue(days); renderTxns(days); renderPay(); renderProducts();
-  document.getElementById("rev-hint").textContent=`Daily revenue, last ${days.length} days`;
-  document.getElementById("txn-hint").textContent=`Sales volume, last ${days.length} days`;
+  document.getElementById("rev-hint").textContent=DATA.trendIsDemo
+    ? "Demo daily revenue trend; products come from the latest Yoco report"
+    : `Daily revenue, last ${days.length} days`;
+  document.getElementById("txn-hint").textContent=DATA.trendIsDemo
+    ? "Demo transaction trend; the Products report does not include daily history"
+    : `Sales volume, last ${days.length} days`;
 }
 
 /* ---------- tiles ---------- */
@@ -222,6 +496,20 @@ function delta(cur,prev){
   return `<span class="${up?'up':'down'}">${up?"▲":"▼"} ${Math.abs(p).toFixed(1)}%</span> vs prior period`;
 }
 function renderTiles(days,prev){
+  if(DATA.trendIsDemo && DATA.totals){
+    const rev=DATA.totals.revenue||0, qty=DATA.totals.quantity||0;
+    const avg=qty?rev/qty:0, top=(DATA.topProducts||[])[0];
+    document.getElementById("tiles").innerHTML=`
+      <div class="tile hero"><div class="k">Report revenue</div><div class="v">${ZAR(rev)}</div>
+        <div class="d">Products report</div></div>
+      <div class="tile"><div class="k">Products sold</div><div class="v">${qty.toLocaleString("en-ZA")}</div>
+        <div class="d">Quantity in report</div></div>
+      <div class="tile"><div class="k">Avg. product sale</div><div class="v">${ZAR(avg)}</div>
+        <div class="d">Revenue per item sold</div></div>
+      <div class="tile"><div class="k">Top product</div><div class="v" style="font-size:20px">${esc(top?.name||"—")}</div>
+        <div class="d">${top?ZAR(top.revenue):"No products"}</div></div>`;
+    return;
+  }
   const rev=days.reduce((s,d)=>s+d.revenue,0), txn=days.reduce((s,d)=>s+(d.transactions||0),0);
   const pRev=prev.reduce((s,d)=>s+d.revenue,0), pTxn=prev.reduce((s,d)=>s+(d.transactions||0),0);
   const avg=txn?rev/txn:0, best=days.reduce((a,b)=>b.revenue>a.revenue?b:a,days[0]);
@@ -322,9 +610,10 @@ function renderPay(){
 function renderProducts(){
   const tp=(DATA.topProducts||[]).slice(0,10);
   const hint=document.querySelector("#plist").closest(".card").querySelector(".hint");
-  if(LIVE?.report) hint.textContent=`From your Yoco report, ${fmtD(LIVE.report.start)} – ${fmtD(LIVE.report.end)}`;
+  if(DATA.report) hint.textContent=`From your Yoco report, ${fmtD(DATA.report.start)} – ${fmtD(DATA.report.end)}`;
+  else hint.textContent="Best sellers in the selected period";
   document.getElementById("plist").innerHTML = tp.length ? tp.map((p,i)=>
-    `<li><span class="rank">${i+1}</span><span class="nm">${p.name}${p.quantity?`<span style="color:var(--ink3);font-size:12px"> · ${p.quantity} sold</span>`:""}</span><span class="amt">${ZAR(p.revenue)}</span></li>`).join("")
+    `<li><span class="rank">${i+1}</span><span class="nm">${esc(p.name)}${p.quantity?`<span style="color:var(--ink3);font-size:12px"> · ${p.quantity} sold</span>`:""}</span><span class="amt">${ZAR(p.revenue)}</span></li>`).join("")
     : `<li class="hint">No product data scraped yet.</li>`;
 }
 </script>

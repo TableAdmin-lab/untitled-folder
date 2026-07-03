@@ -3,89 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="0; url=index.html#connect">
 <title>Connect Yoco — Yoco Pulse</title>
 <style>
-  :root{--navy:#071C39;--blue:#0072CE;--teal:#00B8A9;--ink:#12263A;--ink2:#5B6B7E;--ink3:#93A1B0;
-        --bg:#F4F7FB;--card:#fff;--line:#E4EAF2;--radius:18px;
-        --shadow:0 1px 2px rgba(7,28,57,.05),0 8px 24px rgba(7,28,57,.06)}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font:15px/1.6 -apple-system,"Segoe UI",Inter,Roboto,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh}
-  .top{background:linear-gradient(135deg,var(--navy) 0%,#0B3B74 70%,var(--blue) 140%);color:#fff;padding:44px 24px 96px;text-align:center}
-  .top .logo{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:20px;margin-bottom:18px}
-  .top .dot{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--blue),var(--teal));display:grid;place-items:center}
-  h1{font-size:28px;letter-spacing:-.03em}
-  .top p{color:#A9C4E4;max-width:520px;margin:8px auto 0}
-  .wrap{max-width:560px;margin:-64px auto 60px;padding:0 20px}
-  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:30px}
-  label{display:block;font-size:13px;font-weight:700;color:var(--ink2);margin:18px 0 6px}
-  label:first-of-type{margin-top:0}
-  input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;transition:.15s}
-  input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,114,206,.14)}
-  button{width:100%;margin-top:26px;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px;font:700 15px/1 inherit;cursor:pointer;transition:.15s}
-  button:hover{background:#0B3B74}
-  .out{margin-top:20px;display:none}
-  .out.show{display:block}
-  .out h2{font-size:13px;color:var(--ink2);margin-bottom:8px}
-  pre{background:var(--bg);border-radius:12px;padding:14px;font-size:12.5px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
-  .copy{width:auto;margin-top:10px;background:#fff;color:var(--navy);border:1.5px solid var(--line);padding:9px 16px;font-size:13px}
-  .copy:hover{background:var(--bg)}
-  .sec{display:flex;gap:11px;background:#F0F6FD;border-radius:12px;padding:13px 15px;font-size:13px;color:var(--ink2);margin-top:22px}
-  .back{display:inline-block;margin-top:18px;color:#A9C4E4;text-decoration:none;font-size:13.5px}
-  a{color:var(--blue)}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;font:15px/1.5 -apple-system,"Segoe UI",Inter,Roboto,sans-serif;background:#F4F7FB;color:#12263A}
+  a{color:#0072CE;font-weight:700}
 </style>
 </head>
 <body>
-<div class="top">
-  <div class="logo"><span class="dot">⚡</span>Yoco Pulse</div>
-  <h1>Connect your Yoco account</h1>
-  <p>Nothing here touches the network. Enter your login, then run the generated commands yourself to save them as GitHub secrets.</p>
-  <a class="back" href="index.html">← Back to dashboard</a>
-</div>
-
-<div class="wrap"><div class="card">
-
-  <label for="email">Yoco email</label>
-  <input id="email" type="email" autocomplete="off" placeholder="you@business.co.za">
-
-  <label for="pw">Yoco password</label>
-  <input id="pw" type="password" autocomplete="new-password" placeholder="••••••••••">
-
-  <button id="go">Generate setup commands</button>
-
-  <div class="out" id="out">
-    <h2>Run these in a terminal, in this repo (requires the GitHub CLI, <code>gh auth login</code> once):</h2>
-    <pre id="cmd"></pre>
-    <button class="copy" id="copyBtn">Copy commands</button>
-  </div>
-
-  <div class="sec">🔒 <span>Your email and password are only used to build the command below, in your browser — they are never sent anywhere. Running the commands stores them as encrypted GitHub Actions secrets (<code>YOCO_EMAIL</code>, <code>YOCO_PASSWORD</code>), readable only inside your workflow runs.</span></div>
-
-</div></div>
-
-<script>
-const $ = id => document.getElementById(id);
-
-$("go").onclick = () => {
-  const email = $("email").value.trim();
-  const pw = $("pw").value;
-  if (!email || !pw) return;
-
-  const esc = v => `'${v.replace(/'/g, `'\\''`)}'`;
-  const cmd =
-`printf '%s' ${esc(email)} | gh secret set YOCO_EMAIL
-printf '%s' ${esc(pw)} | gh secret set YOCO_PASSWORD
-gh workflow run scrape.yml`;
-
-  $("cmd").textContent = cmd;
-  $("out").classList.add("show");
-  $("pw").value = "";
-};
-
-$("copyBtn").onclick = () => {
-  navigator.clipboard.writeText($("cmd").textContent);
-  $("copyBtn").textContent = "Copied!";
-  setTimeout(() => ($("copyBtn").textContent = "Copy commands"), 1500);
-};
-</script>
+  <p>Opening the dashboard connection popup… <a href="index.html#connect">Continue</a></p>
 </body>
 </html>

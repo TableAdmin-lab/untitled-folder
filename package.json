@@ -1,0 +1,8 @@
+{
+  "name": "yoco-pulse-backend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "libsodium-wrappers": "^0.7.15"
+  }
+}

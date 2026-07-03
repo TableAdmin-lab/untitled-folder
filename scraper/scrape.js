@@ -446,9 +446,10 @@ function parseReport(path, range) {
   const rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
   const pick = (row, ...names) => {
-    for (const key of Object.keys(row)) {
-      const k = key.toLowerCase();
-      if (names.some((n) => k.includes(n))) return row[key];
+    for (const name of names) {
+      for (const key of Object.keys(row)) {
+        if (key.toLowerCase().includes(name)) return row[key];
+      }
     }
     return null;
   };
@@ -459,7 +460,7 @@ function parseReport(path, range) {
     .map((r) => ({
       name: pick(r, "product", "item", "name", "description"),
       quantity: num(pick(r, "quantity", "qty", "count", "units", "sold")),
-      revenue: num(pick(r, "gross", "revenue", "total", "amount", "net", "sales")),
+      revenue: num(pick(r, "total", "revenue", "amount", "gross sales", "net", "sales", "gross")),
     }))
     .filter((p) => p.name && !/^total/i.test(String(p.name)));
 
