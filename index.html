@@ -821,12 +821,24 @@ function renderPay(){
 /* ---------- top products ---------- */
 function renderProducts(){
   const tp=(DATA.topProducts||[]).slice(0,10);
-  const hint=document.querySelector("#plist").closest(".card").querySelector(".hint");
-  if(DATA.report) hint.textContent=`From your Yoco report, ${fmtD(DATA.report.start)} – ${fmtD(DATA.report.end)}`;
-  else hint.textContent="Best sellers in the selected period";
-  document.getElementById("plist").innerHTML = tp.length ? tp.map((p,i)=>
-    `<li><span class="rank">${i+1}</span><span class="nm">${esc(p.name)}${p.quantity?`<span style="color:var(--ink3);font-size:12px"> · ${p.quantity} sold</span>`:""}</span><span class="amt">${ZAR(p.revenue)}</span></li>`).join("")
-    : `<li class="hint">No product data scraped yet.</li>`;
+  const hint=document.getElementById("prod-hint");
+  if(hint){
+    if(DATA.report) hint.textContent=`From your Yoco report, ${fmtD(DATA.report.start)} – ${fmtD(DATA.report.end)}`;
+    else hint.textContent="Best sellers in the selected period";
+  }
+  const listEl=document.getElementById("products-list");
+  if(listEl){
+    listEl.innerHTML = tp.length ? tp.map((p,i)=>`
+      <div class="row">
+        <div class="row-num">${i + 1}</div>
+        <div class="row-l">
+          <div class="row-k">${esc(p.name || "Unknown")}</div>
+          <div class="row-d">${p.quantity} sales</div>
+        </div>
+        <div class="row-r">${ZAR(p.revenue)}</div>
+      </div>`).join("")
+      : `<div style="padding:16px;color:var(--ink3)">No product data scraped yet.</div>`;
+  }
 }
 </script>
 </body>
