@@ -223,17 +223,32 @@
     </div>
   </div>
 
-  <div class="grid" id="grid-products" style="grid-template-columns:1fr 1.7fr">
-    <div class="card" id="card-products">
-      <h2>Top products</h2>
-      <div class="hint">Best sellers in the selected period</div>
-      <ul class="plist" id="plist"></ul>
+  <div id="grid-products" class="grid-layout" style="margin-top:24px">
+    <div class="card fade-in">
+      <div class="card-title">Top products</div>
+      <div class="card-desc" id="prod-hint">From your Yoco report</div>
+      <div id="products-list"></div>
     </div>
-    <div class="card" id="card-txn">
-      <h2>Transactions per day</h2>
-      <div class="hint" id="txn-hint"></div>
-      <div class="chart-wrap"><svg id="txnchart" width="100%" height="240"></svg><div class="tt" id="tt-txn"></div></div>
+  </div>
+  
+  <div id="grid-advanced" class="grid-layout" style="margin-top:24px; display:none;">
+    <div class="card fade-in" id="card-categories">
+      <div class="card-title">Top categories</div>
+      <div id="categories-list"></div>
     </div>
+    <div class="card fade-in" id="card-brands">
+      <div class="card-title">Top brands</div>
+      <div id="brands-list"></div>
+    </div>
+    <div class="card fade-in" id="card-staff">
+      <div class="card-title">Top staff</div>
+      <div id="staff-list"></div>
+    </div>
+  </div>
+
+  <div class="card fade-in" id="card-transactions" style="margin-top:24px; display:none; overflow-x: auto;">
+    <div class="card-title">Recent transactions</div>
+    <div id="transactions-list"></div>
   </div>
 </main>
 
@@ -576,6 +591,63 @@ function render(){
   }
 
   renderProducts();
+  renderAdvancedWidgets();
+}
+
+function renderAdvancedWidgets() {
+  const adv = document.getElementById("grid-advanced");
+  const txnCard = document.getElementById("card-transactions");
+
+  const showAdv = DATA.topCategories?.length > 0 || DATA.topBrands?.length > 0 || DATA.topStaff?.length > 0;
+  adv.style.display = showAdv ? "grid" : "none";
+  if (showAdv) {
+    adv.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
+    
+    const mkList = (items, emptyMsg) => {
+      if (!items || !items.length) return `<div style="padding:16px;color:${C.ink3}">${emptyMsg}</div>`;
+      return items.slice(0, 10).map((d, i) => `
+        <div class="row">
+          <div class="row-num">${i + 1}</div>
+          <div class="row-l">
+            <div class="row-k">${esc(d.name || "Unknown")}</div>
+            <div class="row-d">${d.quantity} sales</div>
+          </div>
+          <div class="row-r">${ZAR(d.revenue)}</div>
+        </div>
+      `).join("");
+    };
+
+    document.getElementById("categories-list").innerHTML = mkList(DATA.topCategories, "No category data");
+    document.getElementById("brands-list").innerHTML = mkList(DATA.topBrands, "No brand data");
+    document.getElementById("staff-list").innerHTML = mkList(DATA.topStaff, "No staff data");
+  }
+
+  if (DATA.transactions?.length > 0) {
+    txnCard.style.display = "block";
+    let tbl = `<table style="width:100%; text-align:left; border-collapse:collapse; margin-top:8px;">
+      <tr style="border-bottom:1px solid ${C.line}; font-size:12px; color:${C.ink3};">
+        <th style="padding:8px">Date</th>
+        <th style="padding:8px">Time</th>
+        <th style="padding:8px">Item</th>
+        <th style="padding:8px">Staff</th>
+        <th style="padding:8px">Category</th>
+        <th style="padding:8px; text-align:right">Revenue</th>
+      </tr>`;
+    DATA.transactions.slice(0, 50).forEach((t, i) => {
+      tbl += `<tr style="border-bottom:1px solid ${C.line}; font-size:13px; color:${C.ink2};">
+        <td style="padding:8px">${esc(t.date)}</td>
+        <td style="padding:8px">${esc(t.time)}</td>
+        <td style="padding:8px; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${esc(t.name)}">${esc(t.name)}</td>
+        <td style="padding:8px">${esc(t.staff || "—")}</td>
+        <td style="padding:8px">${esc(t.category || "—")}</td>
+        <td style="padding:8px; text-align:right; font-weight:600">${ZAR(t.revenue)}</td>
+      </tr>`;
+    });
+    tbl += `</table>`;
+    document.getElementById("transactions-list").innerHTML = tbl;
+  } else {
+    txnCard.style.display = "none";
+  }
 }
 
 /* ---------- tiles ---------- */
@@ -590,35 +662,51 @@ function delta(cur,prev){
   return `<span class="${up?'up':'down'}">${up?"▲":"▼"} ${Math.abs(p).toFixed(1)}%</span> vs prior period`;
 }
 function renderTiles(days,prev){
-  if(!days || !days.length){
-    const totals = (DATA && DATA.totals) || { revenue: 0, quantity: 0 };
-    const rev = totals.revenue || 0;
-    const qty = totals.quantity || 0;
-    const avg = qty ? rev / qty : 0;
-    const top = (DATA && DATA.topProducts || [])[0];
-    document.getElementById("tiles").innerHTML=`
-      <div class="tile hero"><div class="k">Report revenue</div><div class="v">${ZAR(rev)}</div>
-        <div class="d">Products report</div></div>
-      <div class="tile"><div class="k">Products sold</div><div class="v">${qty.toLocaleString("en-ZA")}</div>
-        <div class="d">Quantity in report</div></div>
-      <div class="tile"><div class="k">Avg. product sale</div><div class="v">${ZAR(avg)}</div>
-        <div class="d">Revenue per item sold</div></div>
-      <div class="tile"><div class="k">Top product</div><div class="v" style="font-size:20px">${esc(top?.name||"—")}</div>
-        <div class="d">${top?ZAR(top.revenue):"No products"}</div></div>`;
-    return;
+  const hasTrends = days && days.length > 0;
+  
+  const totals = (DATA && DATA.totals) || { revenue: 0, quantity: 0 };
+  const rev = hasTrends ? days.reduce((s,d)=>s+d.revenue,0) : (totals.revenue || 0);
+  const txn = hasTrends ? days.reduce((s,d)=>s+(d.transactions||0),0) : (totals.quantity || 0);
+  const avg = txn ? rev / txn : 0;
+  
+  const top = (DATA && DATA.topProducts || [])[0];
+  
+  let html = `<div class="tile hero"><div class="k">${hasTrends ? "Total revenue" : "Report revenue"}</div><div class="v">${ZAR(rev)}</div>`;
+  
+  if (hasTrends) {
+    const pRev=prev.reduce((s,d)=>s+d.revenue,0);
+    html += `<div class="d">${delta(rev,pRev)}</div>${spark(days.map(d=>d.revenue),90,34,"#8FE3DA")}</div>`;
+  } else {
+    html += `<div class="d">From latest scrape</div></div>`;
   }
-  const rev=days.reduce((s,d)=>s+d.revenue,0), txn=days.reduce((s,d)=>s+(d.transactions||0),0);
-  const pRev=prev.reduce((s,d)=>s+d.revenue,0), pTxn=prev.reduce((s,d)=>s+(d.transactions||0),0);
-  const avg=txn?rev/txn:0, best=days.reduce((a,b)=>b.revenue>a.revenue?b:a,days[0]);
-  document.getElementById("tiles").innerHTML=`
-    <div class="tile hero"><div class="k">Total revenue</div><div class="v">${ZAR(rev)}</div>
-      <div class="d">${delta(rev,pRev)}</div>${spark(days.map(d=>d.revenue),90,34,"#8FE3DA")}</div>
-    <div class="tile"><div class="k">Transactions</div><div class="v">${txn.toLocaleString("en-ZA")}</div>
-      <div class="d">${delta(txn,pTxn)}</div>${spark(days.map(d=>d.transactions||0),90,34,C.blue)}</div>
-    <div class="tile"><div class="k">Avg. sale</div><div class="v">${ZAR(avg)}</div>
-      <div class="d">${delta(avg,pTxn?pRev/pTxn:0)}</div></div>
-    <div class="tile"><div class="k">Best day</div><div class="v">${ZAR(best.revenue)}</div>
-      <div class="d">${fmtD(best.date)}</div></div>`;
+  
+  html += `<div class="tile"><div class="k">${hasTrends ? "Transactions" : "Products sold"}</div><div class="v">${txn.toLocaleString("en-ZA")}</div>`;
+  if (hasTrends) {
+    const pTxn=prev.reduce((s,d)=>s+(d.transactions||0),0);
+    html += `<div class="d">${delta(txn,pTxn)}</div>${spark(days.map(d=>d.transactions||0),90,34,C.blue)}</div>`;
+  } else {
+    html += `<div class="d">Quantity in report</div></div>`;
+  }
+
+  html += `<div class="tile"><div class="k">Avg. sale</div><div class="v">${ZAR(avg)}</div>`;
+  if (hasTrends) {
+    const pRev=prev.reduce((s,d)=>s+d.revenue,0);
+    const pTxn=prev.reduce((s,d)=>s+(d.transactions||0),0);
+    html += `<div class="d">${delta(avg,pTxn?pRev/pTxn:0)}</div></div>`;
+  } else {
+    html += `<div class="d">Revenue per unit</div></div>`;
+  }
+  
+  if (hasTrends) {
+    const best = days.length ? days.reduce((a,b)=>b.revenue>a.revenue?b:a,days[0]) : null;
+    html += `<div class="tile"><div class="k">Best day</div><div class="v">${best ? ZAR(best.revenue) : "R0"}</div>
+      <div class="d">${best ? fmtD(best.date) : "—"}</div></div>`;
+  } else {
+    html += `<div class="tile"><div class="k">Top product</div><div class="v" style="font-size:18px">${esc(top?.name||"—")}</div>
+      <div class="d">${top?ZAR(top.revenue):"No products"}</div></div>`;
+  }
+
+  document.getElementById("tiles").innerHTML = html;
 }
 
 /* ---------- revenue line chart ---------- */

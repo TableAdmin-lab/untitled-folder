@@ -516,22 +516,60 @@ function parseReport(path, range) {
   const num = (v) =>
     typeof v === "number" ? v : parseFloat(String(v ?? "").replace(/[R,\s]/g, "")) || 0;
 
+  const rawTransactions = [];
+
   const products = rows
-    .map((r) => ({
-      name: pick(r, "product", "item", "name", "description"),
-      quantity: num(pick(r, "quantity", "qty", "count", "units", "sold")),
-      revenue: num(pick(r, "total", "revenue", "amount", "gross sales", "net", "sales", "gross")),
-    }))
-    .filter((p) => p.name && !/^total/i.test(String(p.name)));
+    .map((r) => {
+      const item = {
+        name: pick(r, "product", "item", "name", "description"),
+        sku: pick(r, "sku", "code"),
+        category: pick(r, "category"),
+        brand: pick(r, "brand"),
+        staff: pick(r, "staff", "cashier", "member", "user"),
+        status: pick(r, "status", "state"),
+        date: pick(r, "date"),
+        time: pick(r, "time"),
+        quantity: num(pick(r, "quantity", "qty", "count", "units", "sold")),
+        revenue: num(pick(r, "total (incl", "total", "revenue", "amount", "gross sales", "net", "sales", "gross")),
+      };
+      
+      // Store all raw transactions for table display
+      if (item.name && !/^total/i.test(String(item.name))) {
+         rawTransactions.push(item);
+      }
+      return item;
+    })
+    // Only aggregate approved/completed transactions
+    .filter((p) => p.name && !/^total/i.test(String(p.name)) && (!p.status || /approved|successful|completed/i.test(p.status)));
+
+  const groupAndSort = (items, key) => {
+    const counts = {};
+    for (const p of items) {
+      const k = String(p[key] || "Uncategorized").trim();
+      if (!counts[k]) counts[k] = { name: k, quantity: 0, revenue: 0 };
+      counts[k].quantity += p.quantity;
+      counts[k].revenue += p.revenue;
+    }
+    return Object.values(counts).sort((a, b) => b.revenue - a.revenue);
+  };
+
+  const topProducts = groupAndSort(products, "name");
+  const topCategories = groupAndSort(products, "category");
+  const topBrands = groupAndSort(products, "brand");
+  const topStaff = groupAndSort(products, "staff");
 
   return {
     scrapedAt: new Date().toISOString(),
     source: "yoco-products-report",
     report: range, // { start, end, reportDay }
-    topProducts: products.sort((a, b) => b.revenue - a.revenue),
+    topProducts,
+    topCategories,
+    topBrands,
+    topStaff,
+    transactions: rawTransactions.slice(0, 500), // Limit to 500 to avoid massive payloads
     totals: {
-      revenue: products.reduce((s, p) => s + p.revenue, 0),
-      quantity: products.reduce((s, p) => s + p.quantity, 0),
+      revenue: topProducts.reduce((s, p) => s + p.revenue, 0),
+      quantity: topProducts.reduce((s, p) => s + p.quantity, 0),
     },
     days: [], // this report has no per-day series; dashboard keeps its own trend
   };

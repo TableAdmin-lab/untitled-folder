@@ -1,5 +1,5 @@
 {
-  "scrapedAt": "2026-07-03T22:34:41.104Z",
+  "scrapedAt": "2026-07-03T23:00:00.000Z",
   "source": "yoco-products-report",
   "report": {
     "start": "2026-07-01",
@@ -7,15 +7,31 @@
     "reportDay": "2026-07-03"
   },
   "topProducts": [
-    {
-      "name": "Cheese Burger (Burger Only)",
-      "quantity": 1,
-      "revenue": 0
-    }
+    {"name": "JOHNNY WALKER BLACK (OLD)", "quantity": 1000, "revenue": 2694},
+    {"name": "500 BERNINI BLUSH", "quantity": 6, "revenue": 120},
+    {"name": "STOUT 750", "quantity": 1, "revenue": 24},
+    {"name": "SAB EMPTIES 750", "quantity": 2, "revenue": 4}
+  ],
+  "topCategories": [
+    {"name": "J WALKER", "quantity": 1000, "revenue": 2694},
+    {"name": "BERNINI", "quantity": 6, "revenue": 120},
+    {"name": "SAB", "quantity": 3, "revenue": 28}
+  ],
+  "topBrands": [
+    {"name": "DIAGEO", "quantity": 1000, "revenue": 2694},
+    {"name": "SAB", "quantity": 3, "revenue": 28}
+  ],
+  "topStaff": [
+    {"name": "Nonkululeko Nqeto", "quantity": 1000, "revenue": 2694},
+    {"name": "Anathi Zingqi", "quantity": 9, "revenue": 144}
+  ],
+  "transactions": [
+    {"date": "2026/07/01", "time": "18:58:34", "name": "JOHNNY WALKER BLACK (OLD)", "staff": "Nonkululeko Nqeto", "category": "J WALKER", "revenue": 2694},
+    {"date": "2026/07/01", "time": "18:52:52", "name": "500 BERNINI BLUSH", "staff": "Anathi Zingqi", "category": "BERNINI", "revenue": 120}
   ],
   "totals": {
-    "revenue": 0,
-    "quantity": 1
+    "revenue": 2842,
+    "quantity": 1009
   },
   "days": []
 }
