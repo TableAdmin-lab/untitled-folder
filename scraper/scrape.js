@@ -12,7 +12,7 @@
 //   5. Parse the xlsx into ../data/latest.json for the dashboard
 //
 // Env: YOCO_EMAIL, YOCO_PASSWORD (GitHub Actions secrets)
-// Debug: writes screenshots to ../debug/ at each step so failures are diagnosable.
+// Debug: writes screenshots + DOM summaries to ../debug/ so failures are diagnosable.
 
 import { chromium } from "playwright";
 import * as XLSX from "xlsx";
@@ -28,6 +28,7 @@ mkdirSync(DEBUG_DIR, { recursive: true });
 
 const EMAIL = process.env.YOCO_EMAIL;
 const PASSWORD = process.env.YOCO_PASSWORD;
+const TEXT_LIMIT = 12_000;
 
 /* ---------------- report window (SAST) ---------------- */
 
@@ -63,6 +64,126 @@ export function reportWindow(today = sastToday()) {
 
 const shot = (page, name) =>
   page.screenshot({ path: join(DEBUG_DIR, `${name}.png`), fullPage: true }).catch(() => {});
+
+const clip = (s = "", n = TEXT_LIMIT) => {
+  const clean = String(s).replace(/\s+/g, " ").trim();
+  return clean.length > n ? `${clean.slice(0, n)}…` : clean;
+};
+
+const fileSafe = (s) => String(s).replace(/[^a-z0-9._-]+/gi, "-").replace(/^-|-$/g, "");
+
+async function debugPage(page, name, extra = {}) {
+  const safeName = fileSafe(name);
+  await shot(page, safeName);
+
+  const snapshot = await page.evaluate(() => {
+    const clipInPage = (s = "", n = 1600) => {
+      const clean = String(s).replace(/\s+/g, " ").trim();
+      return clean.length > n ? `${clean.slice(0, n)}…` : clean;
+    };
+    const visible = (el) => {
+      const style = getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      return (
+        style.visibility !== "hidden" &&
+        style.display !== "none" &&
+        rect.width > 0 &&
+        rect.height > 0
+      );
+    };
+    const describe = (el) => {
+      const rect = el.getBoundingClientRect();
+      return {
+        tag: el.tagName.toLowerCase(),
+        role: el.getAttribute("role"),
+        text: clipInPage(el.innerText || el.textContent || "", 260),
+        ariaLabel: el.getAttribute("aria-label"),
+        title: el.getAttribute("title"),
+        placeholder: el.getAttribute("placeholder"),
+        type: el.getAttribute("type"),
+        disabled: el.hasAttribute("disabled") || el.getAttribute("aria-disabled") === "true",
+        classes: clipInPage(el.className || "", 220),
+        rect: {
+          x: Math.round(rect.x),
+          y: Math.round(rect.y),
+          w: Math.round(rect.width),
+          h: Math.round(rect.height),
+        },
+      };
+    };
+
+    const all = Array.from(document.querySelectorAll("body *")).filter(visible);
+    const interactive = all
+      .filter((el) =>
+        ["button", "a", "input", "select", "textarea"].includes(el.tagName.toLowerCase()) ||
+        ["button", "link", "menuitem", "option", "tab", "textbox"].includes(el.getAttribute("role") || "") ||
+        el.hasAttribute("aria-label")
+      )
+      .slice(0, 160)
+      .map(describe);
+
+    const sections = Array.from(
+      document.querySelectorAll(
+        'main, section, form, nav, aside, header, footer, [role="main"], [role="dialog"], [role="menu"], [role="listbox"], [role="tabpanel"]'
+      )
+    )
+      .filter(visible)
+      .slice(0, 45)
+      .map((el) => ({
+        ...describe(el),
+        text: clipInPage(el.innerText || el.textContent || "", 1200),
+      }));
+
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,h6,[role='heading']"))
+      .filter(visible)
+      .slice(0, 80)
+      .map(describe);
+
+    return {
+      url: location.href,
+      title: document.title,
+      viewport: { w: innerWidth, h: innerHeight },
+      bodyText: clipInPage(document.body?.innerText || "", 4000),
+      headings,
+      sections,
+      interactive,
+    };
+  }).catch((err) => ({ error: String(err?.message || err) }));
+
+  const data = {
+    capturedAt: new Date().toISOString(),
+    name: safeName,
+    extra,
+    ...snapshot,
+  };
+  writeFileSync(join(DEBUG_DIR, `${safeName}.json`), JSON.stringify(data, null, 2));
+  writeFileSync(
+    join(DEBUG_DIR, `${safeName}.txt`),
+    [
+      `# ${safeName}`,
+      `capturedAt: ${data.capturedAt}`,
+      `url: ${data.url || ""}`,
+      `title: ${data.title || ""}`,
+      `extra: ${JSON.stringify(extra)}`,
+      "",
+      "## Body",
+      clip(data.bodyText || ""),
+      "",
+      "## Headings",
+      ...(data.headings || []).map((el, i) => `${i + 1}. ${el.tag}${el.role ? ` role=${el.role}` : ""}: ${el.text || el.ariaLabel || ""}`),
+      "",
+      "## Sections",
+      ...(data.sections || []).map((el, i) => `${i + 1}. ${el.tag}${el.role ? ` role=${el.role}` : ""} ${JSON.stringify(el.rect)}\n${el.text || ""}`),
+      "",
+      "## Interactive Elements",
+      ...(data.interactive || []).map((el, i) => {
+        const label = el.text || el.ariaLabel || el.placeholder || el.title || "";
+        return `${i + 1}. ${el.tag}${el.role ? ` role=${el.role}` : ""}${el.type ? ` type=${el.type}` : ""}${el.disabled ? " disabled" : ""} ${JSON.stringify(el.rect)} :: ${label}`;
+      }),
+      "",
+    ].join("\n")
+  );
+}
 
 async function main() {
   if (!EMAIL || !PASSWORD) {
@@ -113,21 +234,32 @@ async function main() {
     console.log("Opening report:", reportUrl);
     await page.goto(reportUrl, { waitUntil: "networkidle" });
     await page.waitForTimeout(5_000);
-    await shot(page, "04-report");
+    await debugPage(page, "04-report", { phase: "report-loaded" });
 
     // Yoco occasionally shows a transient "can't connect" screen — reload once.
     if (/can'?t connect/i.test(await page.textContent("body"))) {
       console.warn("Got a connectivity error screen — reloading once.");
       await page.reload({ waitUntil: "networkidle" });
       await page.waitForTimeout(5_000);
-      await shot(page, "04b-report-retry");
+      await debugPage(page, "04b-report-retry", { phase: "report-reloaded" });
     }
 
     await setDateRangeViaUi(page, start, end).catch(async (e) => {
       console.warn("Date-selector UI did not complete:", e.message);
+      await debugPage(page, "05z-datepicker-error", {
+        phase: "date-selector-error",
+        error: e.message,
+        start: ymd(start),
+        end: ymd(end),
+      });
       await page.keyboard.press("Escape").catch(() => {}); // close any stuck calendar overlay
+      throw e;
     });
-    await shot(page, "05-after-datepicker");
+    await debugPage(page, "05-after-datepicker", {
+      phase: "date-selector-finished",
+      start: ymd(start),
+      end: ymd(end),
+    });
 
     // Applying the custom range triggers a report data reload (visible as
     // spinners on the page) during which "Export" is briefly not rendered.
@@ -139,7 +271,7 @@ async function main() {
     // Top-right "Export" button (real UI: visible text button, not an icon glyph).
     await page.getByText("Export", { exact: true }).first().click();
     await page.waitForTimeout(1_000);
-    await shot(page, "06-download-menu");
+    await debugPage(page, "06-download-menu", { phase: "export-menu-open" });
 
     const [download] = await Promise.all([
       page.waitForEvent("download", { timeout: 60_000 }),
@@ -172,13 +304,36 @@ const MONTH_NAMES = [
    Last week / This month / Last month / Custom range / Location) — click
    "Custom range" (a real <button role="button">) to open the calendar. */
 async function setDateRangeViaUi(page, start, end) {
+  await debugPage(page, "05a-before-custom-range", {
+    phase: "before-custom-range-click",
+    start: ymd(start),
+    end: ymd(end),
+  });
   await page.getByRole("button", { name: "Custom range", exact: true }).click();
   await page.waitForTimeout(800);
+  await debugPage(page, "05b-custom-range-open", {
+    phase: "custom-range-open",
+    start: ymd(start),
+    end: ymd(end),
+  });
 
-  for (const d of [start, end]) {
+  for (const [index, d] of [start, end].entries()) {
     await navigateToMonth(page, d);
+    await debugPage(page, `05c-${index ? "end" : "start"}-month-${ymd(d)}`, {
+      phase: "target-month-visible",
+      date: ymd(d),
+    });
     await clickDay(page, d);
+    await debugPage(page, `05d-${index ? "end" : "start"}-day-${ymd(d)}-selected`, {
+      phase: "target-day-clicked",
+      date: ymd(d),
+    });
   }
+  await debugPage(page, "05e-before-apply", {
+    phase: "before-apply",
+    start: ymd(start),
+    end: ymd(end),
+  });
   await page.getByRole("button", { name: "Apply", exact: true }).click();
   await page.waitForTimeout(3_000);
 }
@@ -215,7 +370,12 @@ async function navigateToMonth(page, d) {
     await backArrow.click();
     await page.waitForTimeout(300);
   }
-  console.warn(`navigateToMonth: gave up looking for ${targetMonth} ${targetYear}`);
+  await debugPage(page, `05x-missing-month-${targetMonth}-${targetYear}`, {
+    phase: "missing-target-month",
+    targetMonth,
+    targetYear,
+  });
+  throw new Error(`navigateToMonth: gave up looking for ${targetMonth} ${targetYear}`);
 }
 
 /* Day cells belonging to the previous/next month (shown greyed-out to fill
@@ -229,9 +389,20 @@ async function clickDay(page, d) {
     .first();
   if (await cell.count()) {
     await cell.click();
-  } else {
+    await page.waitForTimeout(400);
+    return;
+  }
+
+  await debugPage(page, `05x-missing-day-${ymd(d)}`, {
+    phase: "missing-target-day",
+    date: ymd(d),
+  });
+
+  try {
     // fallback if the class name ever changes
     await page.getByText(day, { exact: true }).first().click();
+  } catch (e) {
+    throw new Error(`clickDay: could not click ${ymd(d)} (${e.message})`);
   }
   await page.waitForTimeout(400);
 }
