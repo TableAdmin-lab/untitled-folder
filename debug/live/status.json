@@ -1,36 +1,7 @@
 {
-  "state": "passed",
-  "startedAt": "2026-07-03T18:04:41.825Z",
-  "finishedAt": "2026-07-03T18:04:56.800Z",
+  "state": "running",
+  "startedAt": "2026-07-03T22:12:48.298Z",
+  "finishedAt": null,
   "error": null,
-  "steps": [
-    {
-      "n": 1,
-      "name": "login-page",
-      "shot": "step-01-login-page.png",
-      "at": "2026-07-03T18:04:46.896Z",
-      "ms": 5070
-    },
-    {
-      "n": 2,
-      "name": "email-filled",
-      "shot": "step-02-email-filled.png",
-      "at": "2026-07-03T18:04:47.890Z",
-      "ms": 994
-    },
-    {
-      "n": 3,
-      "name": "password-filled",
-      "shot": "step-03-password-filled.png",
-      "at": "2026-07-03T18:04:48.958Z",
-      "ms": 1068
-    },
-    {
-      "n": 4,
-      "name": "logged-in",
-      "shot": "step-04-logged-in.png",
-      "at": "2026-07-03T18:04:55.831Z",
-      "ms": 6873
-    }
-  ]
+  "steps": []
 }
