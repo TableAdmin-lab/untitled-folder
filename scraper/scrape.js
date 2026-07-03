@@ -71,6 +71,7 @@ const clip = (s = "", n = TEXT_LIMIT) => {
 };
 
 const fileSafe = (s) => String(s).replace(/[^a-z0-9._-]+/gi, "-").replace(/^-|-$/g, "");
+const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 async function debugPage(page, name, extra = {}) {
   const safeName = fileSafe(name);
@@ -185,6 +186,36 @@ async function debugPage(page, name, extra = {}) {
   );
 }
 
+async function clickVisibleControl(page, label, { roles = ["button"], timeout = 30_000 } = {}) {
+  const pattern = label instanceof RegExp ? label : new RegExp(`\\b${escapeRe(label)}\\b`, "i");
+  const candidates = [
+    ...roles.map((role) => page.getByRole(role).filter({ hasText: pattern })),
+    page.locator("button").filter({ hasText: pattern }),
+  ];
+  const deadline = Date.now() + timeout;
+
+  while (Date.now() < deadline) {
+    for (const locator of candidates) {
+      const count = Math.min(await locator.count().catch(() => 0), 8);
+      for (let i = 0; i < count; i++) {
+        const candidate = locator.nth(i);
+        if ((await candidate.isVisible().catch(() => false)) && (await candidate.isEnabled().catch(() => false))) {
+          await candidate.click({ timeout: 5_000 });
+          return;
+        }
+      }
+    }
+    await page.waitForTimeout(500);
+  }
+
+  await debugPage(page, `click-${fileSafe(String(label))}-failed`, {
+    phase: "visible-control-not-found",
+    label: String(label),
+    roles,
+  });
+  throw new Error(`Could not find a visible enabled ${roles.join("/")} labelled "${label}"`);
+}
+
 async function main() {
   if (!EMAIL || !PASSWORD) {
     console.error("Missing YOCO_EMAIL / YOCO_PASSWORD environment variables.");
@@ -268,14 +299,15 @@ async function main() {
 
     /* ---- 3. download → Excel ---- */
     console.log("Downloading Excel export…");
-    // Top-right "Export" button (real UI: visible text button, not an icon glyph).
-    await page.getByText("Export", { exact: true }).first().click();
+    // Top-right "Export" button. Avoid getByText().first(): Yoco also renders
+    // hidden offscreen text nodes named "Export", which are not clickable.
+    await clickVisibleControl(page, "Export");
     await page.waitForTimeout(1_000);
     await debugPage(page, "06-download-menu", { phase: "export-menu-open" });
 
     const [download] = await Promise.all([
       page.waitForEvent("download", { timeout: 60_000 }),
-      page.getByText("Excel", { exact: true }).first().click(),
+      clickVisibleControl(page, "Excel", { roles: ["button", "menuitem", "option"] }),
     ]);
     const xlsxPath = join(DATA_DIR, "report.xlsx");
     await download.saveAs(xlsxPath);
