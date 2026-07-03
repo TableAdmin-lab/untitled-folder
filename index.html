@@ -130,9 +130,42 @@
   th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
   th:first-child,td:first-child{text-align:left}
   th{color:var(--ink-2);font-weight:600}
+
+  /* ---------- empty state ---------- */
+  .empty-state{display:none;min-height:100vh;width:100%;align-items:center;justify-content:center;padding:40px 24px;background:var(--bg)}
+  .empty-state.show{display:flex}
+  .empty-card{width:min(520px,100%);background:var(--card);border-radius:var(--radius);padding:40px 32px;box-shadow:var(--shadow);border:1px solid var(--line);text-align:center}
+  .empty-logo{font-size:48px;margin-bottom:20px;display:inline-block}
+  .empty-title{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:12px;color:var(--navy)}
+  .empty-desc{color:var(--ink-2);font-size:14.5px;line-height:1.6;margin-bottom:30px}
+  .empty-steps{text-align:left;background:#FBFCFE;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:30px}
+  .empty-steps h3{font-size:14px;font-weight:800;margin-bottom:12px;color:var(--navy)}
+  .empty-steps ol{margin-left:20px;font-size:13px;color:var(--ink-2);display:grid;gap:8px}
 </style>
 </head>
 <body>
+
+<div class="empty-state" id="emptyStateContainer">
+  <div class="empty-card">
+    <span class="empty-logo">⚡</span>
+    <h2 class="empty-title">Welcome to Yoco Pulse</h2>
+    <p class="empty-desc">Your dashboard is ready, but no scraped data has been imported yet. Connect your Yoco account below to run the scraper and fetch your live sales data.</p>
+    
+    <div class="empty-steps">
+      <h3>How it works:</h3>
+      <ol>
+        <li>Your login details are secured as encrypted GitHub Actions Secrets in your repository.</li>
+        <li>The automated scraper logs in and downloads your products report.</li>
+        <li>The data is processed, and this dashboard will update automatically.</li>
+      </ol>
+    </div>
+
+    <button class="action primary" id="emptyConnectBtn" type="button" style="padding:12px 24px;font-size:14px;border-radius:12px;cursor:pointer;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-right:8px;vertical-align:middle;display:inline-block;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+      Connect Yoco Account
+    </button>
+  </div>
+</div>
 
 <aside>
   <div class="logo"><span class="dot">⚡</span>Yoco&nbsp;Pulse</div>
@@ -176,27 +209,27 @@
 
   <div class="tiles" id="tiles"></div>
 
-  <div class="grid">
-    <div class="card">
+  <div class="grid" id="grid-revenue">
+    <div class="card" id="card-revenue">
       <h2>Revenue</h2>
       <div class="hint" id="rev-hint"></div>
       <div class="chart-wrap"><svg id="revchart" width="100%" height="260"></svg><div class="tt" id="tt-rev"></div></div>
       <details class="tbl"><summary>View as table</summary><div id="rev-table"></div></details>
     </div>
-    <div class="card">
+    <div class="card" id="card-pay">
       <h2>Payment methods</h2>
       <div class="hint">Share of revenue by how customers paid</div>
       <div id="paybars"></div>
     </div>
   </div>
 
-  <div class="grid" style="grid-template-columns:1fr 1.7fr">
-    <div class="card">
+  <div class="grid" id="grid-products" style="grid-template-columns:1fr 1.7fr">
+    <div class="card" id="card-products">
       <h2>Top products</h2>
       <div class="hint">Best sellers in the selected period</div>
       <ul class="plist" id="plist"></ul>
     </div>
-    <div class="card">
+    <div class="card" id="card-txn">
       <h2>Transactions per day</h2>
       <div class="hint" id="txn-hint"></div>
       <div class="chart-wrap"><svg id="txnchart" width="100%" height="240"></svg><div class="tt" id="tt-txn"></div></div>
@@ -268,28 +301,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;"
 const pause = ms => new Promise(r=>setTimeout(r,ms));
 const CONNECT_ENDPOINT = window.YOCO_CONNECT_ENDPOINT || "/api/connect-yoco";
 
-/* ---------- data: real scrape → fallback demo ---------- */
-function demoData(){
-  // deterministic pseudo-random so demo looks alive but stable
-  let seed = 42; const rnd = ()=> (seed = (seed*16807)%2147483647)/2147483647;
-  const days=[]; const today = new Date();
-  for(let i=89;i>=0;i--){
-    const d = new Date(today); d.setDate(d.getDate()-i);
-    const dow = d.getDay(); const wk = (dow===0)?.55:(dow===6)?1.35:(dow===5)?1.25:1;
-    const trend = 1 + (89-i)*0.004;
-    days.push({ date:d.toISOString().slice(0,10),
-      revenue: Math.round((5200 + rnd()*3800) * wk * trend),
-      transactions: Math.round((38 + rnd()*30) * wk * trend) });
-  }
-  return { source:"demo", scrapedAt:null, days,
-    paymentMethods:[ {name:"Card (tap)",amount:412000},{name:"Card (insert)",amount:151000},
-      {name:"Yoco Link",amount:88000},{name:"QR / SnapScan",amount:46000},{name:"Cash logged",amount:23000} ],
-    topProducts:[ {name:"Flat white",revenue:48200},{name:"Breakfast bun",revenue:39750},
-      {name:"Iced latte",revenue:31400},{name:"Carrot cake slice",revenue:24800},
-      {name:"Cold brew bottle",revenue:19300},{name:"Beanie merch",revenue:12100} ] };
-}
-
-let DATA=null, RANGE=30, LIVE=null, MODE="demo", BOOTED=false;
+let DATA=null, RANGE=30, LIVE=null, MODE="empty", BOOTED=false;
 
 function setProgress(pct, stage, detail=stage){
   const p=Math.max(0,Math.min(100,Math.round(pct)));
@@ -312,22 +324,6 @@ function closeConnect(){
   document.getElementById("connectModal").classList.remove("show");
   if(location.hash==="#connect") history.replaceState(null,"",location.pathname+location.search);
 }
-function mergeDashboardData(source, mode){
-  const demo=demoData();
-  if(mode==="demo") return { ...demo, mode, trendIsDemo:false };
-  const merged={ ...demo };
-  Object.entries(source||{}).forEach(([k,v])=>{
-    if(Array.isArray(v)){ if(v.length) merged[k]=v; }
-    else if(v!=null) merged[k]=v;
-  });
-  merged.mode=mode;
-  merged.trendIsDemo=!(source?.days?.length);
-  if(merged.trendIsDemo) merged.days=demo.days;
-  if(!source?.paymentMethods?.length && /products-report/.test(source?.source||"")) {
-    merged.paymentMethods=[];
-  }
-  return merged;
-}
 async function initData(){
   setProgress(18,"Fetching live report","data/latest.json");
   try{
@@ -336,31 +332,66 @@ async function initData(){
     const d=await r.json();
     if(!(d.days?.length || d.topProducts?.length)) throw new Error("empty report");
     setProgress(76,"Preparing live data","Rendering Yoco report");
-    LIVE=d; DATA=mergeDashboardData(d,"live"); boot("live");
+    LIVE=d; DATA=d; DATA.mode="live"; boot("live");
   }catch{
-    setProgress(76,"Preparing demo data","No live report found");
-    LIVE=null; DATA=mergeDashboardData(demoData(),"demo"); boot("demo");
+    setProgress(76,"Ready","No live report found");
+    LIVE=null; DATA={ mode: "empty" }; boot("empty");
   }
 }
 
 function boot(mode){
   MODE=mode;
   setProgress(100,"Rendering dashboard","Almost ready");
+
+  const isEmpty = mode === "empty";
+  document.getElementById("emptyStateContainer").classList.toggle("show", isEmpty);
+  document.querySelector("aside").style.display = isEmpty ? "none" : "flex";
+  document.querySelector("main").style.display = isEmpty ? "none" : "block";
+
+  if (isEmpty) {
+    if(!BOOTED){
+      document.getElementById("filters").addEventListener("click",e=>{
+        const btn=e.target.closest("button"); if(!btn) return;
+        document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on",x===btn));
+        RANGE=+btn.dataset.days; render();
+      });
+      document.getElementById("openConnectTop").addEventListener("click",openConnect);
+      document.getElementById("runSetupTop").addEventListener("click",openConnect);
+      document.getElementById("openConnectSide").addEventListener("click",openConnect);
+      document.getElementById("closeConnect").addEventListener("click",closeConnect);
+      document.getElementById("connectModal").addEventListener("click",e=>{ if(e.target.id==="connectModal") closeConnect(); });
+      addEventListener("keydown",e=>{ if(e.key==="Escape") closeConnect(); });
+      addEventListener("resize",render);
+      document.getElementById("yocoConnectForm").addEventListener("submit",e=>{
+        e.preventDefault();
+        connectYoco();
+      });
+      setWorkflowLink();
+      document.getElementById("emptyConnectBtn").addEventListener("click", openConnect);
+      BOOTED=true;
+    }
+    if(location.hash==="#connect") setTimeout(openConnect,260);
+    setTimeout(hideProgress,220);
+    return;
+  }
+
   const b=document.getElementById("badge"), t=document.getElementById("badge-txt");
-  b.classList.toggle("demo",mode==="demo");
+  b.classList.remove("demo");
   if(mode==="live"){
     const r=LIVE.report;
     t.textContent = r
       ? `Live · products report ${fmtD(r.start)} – ${fmtD(r.end)}`
       : "Live · scraped "+new Date(LIVE.scrapedAt).toLocaleString("en-ZA",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
     document.getElementById("connectState").textContent="Live GitHub Actions data";
-    if(!LIVE.days?.length) document.getElementById("subline").textContent="Products are live from your latest Yoco report; trend charts show demo data until daily history accumulates.";
+    
+    const hasTrends = LIVE.days && LIVE.days.length > 0;
+    if(!hasTrends) {
+      document.getElementById("subline").textContent="Products are live from your latest Yoco report.";
+    } else {
+      document.getElementById("subline").textContent="Here’s how your business is doing.";
+    }
   }
-  else {
-    t.textContent="Demo data — connect Yoco to go live";
-    document.getElementById("subline").textContent="Here’s how your business is doing.";
-    document.getElementById("connectState").textContent="Automation not connected";
-  }
+
   const h=new Date().getHours();
   document.getElementById("greeting").textContent = (h<12?"Good morning":h<17?"Good afternoon":"Good evening")+" 👋";
   if(!BOOTED){
@@ -381,6 +412,7 @@ function boot(mode){
       connectYoco();
     });
     setWorkflowLink();
+    document.getElementById("emptyConnectBtn").addEventListener("click", openConnect);
     BOOTED=true;
   }
   render();
@@ -427,7 +459,7 @@ async function waitForLiveData(){
     setConnectStatus("Scrape is running. Waiting for GitHub Pages to publish the latest data...");
     try{
       const d=await fetchLiveData();
-      LIVE=d; DATA=mergeDashboardData(d,"live");
+      LIVE=d; DATA=d; DATA.mode="live";
       boot("live");
       setConnectStatus("Connected. Live data is ready.", "success");
       setTimeout(closeConnect,1200);
@@ -479,14 +511,58 @@ async function connectYoco(){
 function slice(){ return DATA.days.slice(-RANGE); }
 
 function render(){
-  const days=slice(), prev=DATA.days.slice(-RANGE*2,-RANGE);
-  renderTiles(days,prev); renderRevenue(days); renderTxns(days); renderPay(); renderProducts();
-  document.getElementById("rev-hint").textContent=DATA.trendIsDemo
-    ? "Demo daily revenue trend; products come from the latest Yoco report"
-    : `Daily revenue, last ${days.length} days`;
-  document.getElementById("txn-hint").textContent=DATA.trendIsDemo
-    ? "Demo transaction trend; the Products report does not include daily history"
-    : `Sales volume, last ${days.length} days`;
+  if (MODE === "empty") return;
+
+  const hasTrends = DATA.days && DATA.days.length > 0;
+  const hasPayMethods = DATA.paymentMethods && DATA.paymentMethods.length > 0;
+
+  const gridRev = document.getElementById("grid-revenue");
+  const gridProd = document.getElementById("grid-products");
+  const revCard = document.getElementById("card-revenue");
+  const payCard = document.getElementById("card-pay");
+  const txnCard = document.getElementById("card-txn");
+  
+  if (revCard) revCard.style.display = hasTrends ? "block" : "none";
+  if (payCard) payCard.style.display = hasPayMethods ? "block" : "none";
+  if (txnCard) txnCard.style.display = hasTrends ? "block" : "none";
+
+  if (!hasTrends && !hasPayMethods) {
+    gridRev.style.display = "none";
+  } else {
+    gridRev.style.display = "grid";
+    if (hasTrends && !hasPayMethods) {
+      gridRev.style.gridTemplateColumns = "1fr";
+    } else if (!hasTrends && hasPayMethods) {
+      gridRev.style.gridTemplateColumns = "1fr";
+    } else {
+      gridRev.style.gridTemplateColumns = "1.7fr 1fr";
+    }
+  }
+
+  if (!hasTrends) {
+    gridProd.style.gridTemplateColumns = "1fr";
+  } else {
+    gridProd.style.gridTemplateColumns = "1fr 1.7fr";
+  }
+
+  if (hasTrends) {
+    const days=slice(), prev=DATA.days.slice(-RANGE*2,-RANGE);
+    renderTiles(days,prev);
+    renderRevenue(days);
+    renderTxns(days);
+    document.getElementById("rev-hint").textContent = `Daily revenue, last ${days.length} days`;
+    document.getElementById("txn-hint").textContent = `Sales volume, last ${days.length} days`;
+    document.getElementById("filters").style.display = "flex";
+  } else {
+    renderTiles([], []);
+    document.getElementById("filters").style.display = "none";
+  }
+
+  if (hasPayMethods) {
+    renderPay();
+  }
+
+  renderProducts();
 }
 
 /* ---------- tiles ---------- */
