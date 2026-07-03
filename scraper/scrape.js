@@ -415,7 +415,7 @@ async function navigateToMonth(page, d) {
   const monthBtns = page.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) });
   const yearBtns = page.locator('button[role="button"]').filter({ hasText: /\d{4}/ });
 
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < 72; i++) {
     const monthCount = await monthBtns.count();
     if (monthCount === 0) {
       throw new Error(`Lost the calendar! monthCount is 0.`);
