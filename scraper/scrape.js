@@ -129,6 +129,11 @@ async function main() {
     });
     await shot(page, "05-after-datepicker");
 
+    // Applying the custom range triggers a report data reload (visible as
+    // spinners on the page) during which "Export" is briefly not rendered.
+    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.waitForTimeout(2_000);
+
     /* ---- 3. download → Excel ---- */
     console.log("Downloading Excel export…");
     // Top-right "Export" button (real UI: visible text button, not an icon glyph).
