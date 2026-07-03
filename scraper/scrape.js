@@ -329,6 +329,11 @@ async function main() {
     const data = parseReport(xlsxPath, { start: ymd(start), end: ymd(end), reportDay: ymd(reportDay) });
     writeFileSync(join(DATA_DIR, "latest.json"), JSON.stringify(data, null, 2));
     console.log(`Wrote latest.json — ${data.topProducts.length} products.`);
+  } catch (error) {
+    console.error("\n[!] FATAL ERROR ENCOUNTERED");
+    console.error(error);
+    await debugPage(page, "99-crash-dump", { phase: "fatal-error", error: error.message });
+    throw error;
   } finally {
     await shot(page, "99-final");
     await browser.close();
