@@ -447,36 +447,36 @@ async function fetchLiveData(){
   const repo=githubRepoSlug();
   const url = repo==="OWNER/REPO"
     ? `data/latest.json?t=${Date.now()}`
-    : `https://api.github.com/repos/${repo}/contents/data/latest.json?t=${Date.now()}`;
-  
-  const headers = repo==="OWNER/REPO"
-    ? {}
-    : { "Accept": "application/vnd.github.v3.raw" };
+    : `https://raw.githubusercontent.com/${repo}/main/data/latest.json?t=${Date.now()}`;
 
-  const r=await fetch(url,{
-    cache:"no-store",
-    headers: headers
-  });
+  const r=await fetch(url,{ cache:"no-store" });
   if(!r.ok) throw new Error(String(r.status));
   const d=await r.json();
   if(!(d.days?.length || d.topProducts?.length)) throw new Error("empty report");
   return d;
 }
-async function waitForLiveData(){
+async function waitForLiveData(lastScrapedTime){
   const deadline=Date.now()+6*60*1000;
   let attempt=0;
   while(Date.now()<deadline){
     attempt++;
     await pause(attempt===1?12000:18000);
-    setConnectStatus("Scrape is running. Waiting for GitHub Pages to publish the latest data...");
+    setConnectStatus("Scrape is running. Checking for updated data...");
     try{
       const d=await fetchLiveData();
-      LIVE=d; DATA=d; DATA.mode="live";
-      boot("live");
-      setConnectStatus("Connected. Live data is ready.", "success");
-      setTimeout(closeConnect,1200);
-      return true;
-    }catch{}
+      const newScrapedTime = new Date(d.scrapedAt).getTime();
+      if (newScrapedTime > lastScrapedTime) {
+        LIVE=d; DATA=d; DATA.mode="live";
+        boot("live");
+        setConnectStatus("Connected. Live data is ready.", "success");
+        setTimeout(closeConnect,1200);
+        return true;
+      } else {
+        console.log("Fetched report is still the old one. Waiting...");
+      }
+    }catch(err){
+      console.warn("Polling error:", err);
+    }
   }
   setConnectStatus("The scraper was started, but the dashboard data is not published yet. This can take a few minutes; refresh shortly.", "success");
   return false;
@@ -506,10 +506,11 @@ async function connectYoco(){
     });
     const payload=await res.json().catch(()=>({}));
     if(!res.ok || !payload.ok) throw new Error(payload.error || `Connect failed (${res.status})`);
+    const lastScrapedTime = LIVE ? new Date(LIVE.scrapedAt).getTime() : 0;
     document.getElementById("yocoPassword").value="";
     document.getElementById("connectState").textContent="Scrape workflow started";
     setConnectStatus("Login saved. The scraper is running now...");
-    await waitForLiveData();
+    await waitForLiveData(lastScrapedTime);
   }catch(err){
     setConnectStatus(err.message || "Could not connect Yoco. Please try again.", "error");
     document.getElementById("connectState").textContent="Connection failed";
