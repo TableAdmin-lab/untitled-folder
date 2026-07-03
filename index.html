@@ -355,7 +355,7 @@ async function initData(){
     }
     
     setProgress(76,"Preparing live data","Rendering Yoco report");
-    DATA=d; DATA.mode="live"; boot("live");
+    LIVE=d; DATA=d; DATA.mode="live"; boot("live");
   } catch(e){
     console.error("Init fallback to empty state",e);
     setProgress(76,"Ready","No live report found");
