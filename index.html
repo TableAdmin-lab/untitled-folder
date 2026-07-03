@@ -230,26 +230,28 @@
       </button>
     </div>
     <div class="modal-body">
-      <div class="login-form">
-        <div class="field">
-          <label for="yocoEmail">Yoco email</label>
-          <input id="yocoEmail" type="email" autocomplete="username" placeholder="you@business.co.za">
+      <form id="yocoConnectForm">
+        <div class="login-form">
+          <div class="field">
+            <label for="yocoEmail">Yoco email</label>
+            <input id="yocoEmail" type="email" autocomplete="username" placeholder="you@business.co.za" required>
+          </div>
+          <div class="field">
+            <label for="yocoPassword">Yoco password</label>
+            <input id="yocoPassword" type="password" autocomplete="current-password" placeholder="Password" required>
+          </div>
         </div>
-        <div class="field">
-          <label for="yocoPassword">Yoco password</label>
-          <input id="yocoPassword" type="password" autocomplete="current-password" placeholder="Password">
+        <div class="modal-actions">
+          <button class="action primary" id="connectYocoBtn" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/></svg>
+            <span>Connect and load data</span>
+          </button>
+          <a class="action" id="testLoginLink" href="debug.html" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
+            Login debug
+          </a>
         </div>
-      </div>
-      <div class="modal-actions">
-        <button class="action primary" id="connectYocoBtn" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/></svg>
-          <span>Connect and load data</span>
-        </button>
-        <a class="action" id="testLoginLink" href="debug.html" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
-          Login debug
-        </a>
-      </div>
+      </form>
       <div class="connect-status" id="connectStatus" aria-live="polite"></div>
       <div class="note">Your Yoco password is sent only to the Vercel backend over HTTPS. The backend stores it as a GitHub Actions secret, triggers the scrape workflow, and does not return or expose the password to this page.</div>
     </div>
@@ -374,7 +376,10 @@ function boot(mode){
     document.getElementById("connectModal").addEventListener("click",e=>{ if(e.target.id==="connectModal") closeConnect(); });
     addEventListener("keydown",e=>{ if(e.key==="Escape") closeConnect(); });
     addEventListener("resize",render);
-    document.getElementById("connectYocoBtn").addEventListener("click",connectYoco);
+    document.getElementById("yocoConnectForm").addEventListener("submit",e=>{
+      e.preventDefault();
+      connectYoco();
+    });
     setWorkflowLink();
     BOOTED=true;
   }

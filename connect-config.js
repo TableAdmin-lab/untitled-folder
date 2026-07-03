@@ -1,3 +1,3 @@
 // Public frontend config. This is not a secret.
 // Point this at the Vercel project that hosts api/connect-yoco.js.
-window.YOCO_CONNECT_ENDPOINT = "https://untitled-folder-fodtm9pal-netlify-functions-projects.vercel.app/api/connect-yoco";
+window.YOCO_CONNECT_ENDPOINT = "https://untitled-folder-ochre.vercel.app/api/connect-yoco";
