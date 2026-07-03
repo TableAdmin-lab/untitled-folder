@@ -1,0 +1,21 @@
+{
+  "scrapedAt": "2026-07-03T12:13:51.653Z",
+  "source": "yoco-products-report",
+  "report": {
+    "start": "2026-07-01",
+    "end": "2026-07-02",
+    "reportDay": "2026-07-03"
+  },
+  "topProducts": [
+    {
+      "name": "Cheese Burger (Burger Only)",
+      "quantity": 1,
+      "revenue": 0
+    }
+  ],
+  "totals": {
+    "revenue": 0,
+    "quantity": 1
+  },
+  "days": []
+}
