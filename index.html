@@ -444,7 +444,19 @@ function setConnectStatus(message, type=""){
   box.className=`connect-status show${type?` ${type}`:""}`;
 }
 async function fetchLiveData(){
-  const r=await fetch(`data/latest.json?t=${Date.now()}`,{cache:"no-store"});
+  const repo=githubRepoSlug();
+  const url = repo==="OWNER/REPO"
+    ? `data/latest.json?t=${Date.now()}`
+    : `https://api.github.com/repos/${repo}/contents/data/latest.json?t=${Date.now()}`;
+  
+  const headers = repo==="OWNER/REPO"
+    ? {}
+    : { "Accept": "application/vnd.github.v3.raw" };
+
+  const r=await fetch(url,{
+    cache:"no-store",
+    headers: headers
+  });
   if(!r.ok) throw new Error(String(r.status));
   const d=await r.json();
   if(!(d.days?.length || d.topProducts?.length)) throw new Error("empty report");
