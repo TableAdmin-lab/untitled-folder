@@ -176,6 +176,7 @@ async function debugPage(page, name, extra = {}) {
       "## Sections",
       ...(data.sections || []).map((el, i) => `${i + 1}. ${el.tag}${el.role ? ` role=${el.role}` : ""} ${JSON.stringify(el.rect)}\n${el.text || ""}`),
       "",
+      "",
       "## Interactive Elements",
       ...(data.interactive || []).map((el, i) => {
         const label = el.text || el.ariaLabel || el.placeholder || el.title || "";
@@ -184,6 +185,15 @@ async function debugPage(page, name, extra = {}) {
       "",
     ].join("\n")
   );
+
+  console.log("\n====== PAGE DEBUG DUMP ======");
+  console.log(`URL: ${data.url || "unknown"}`);
+  console.log("Interactive Elements on Page:");
+  (data.interactive || []).forEach((el, i) => {
+    const label = el.text || el.ariaLabel || el.placeholder || el.title || "";
+    console.log(`  ${i + 1}. ${el.tag}${el.role ? ` role=${el.role}` : ""}${el.disabled ? " (disabled)" : ""} :: ${label}`);
+  });
+  console.log("=============================\n");
 }
 
 async function clickVisibleControl(page, label, { roles = ["button"], timeout = 30_000 } = {}) {
@@ -386,7 +396,14 @@ async function navigateToMonth(page, d) {
     .first();
   await anyMonthBtn.waitFor({ state: "visible", timeout: 15000 });
 
-  const calendarArrows = page.locator('button[style*="width: 36px"][style*="height: 36px"]');
+  // Isolate the calendar header container to find the arrows safely
+  // (avoiding the page header's "Back" button which is also 36x36)
+  const calendarHeader = page.locator('div')
+    .filter({ has: page.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) }) })
+    .filter({ has: page.locator('button[style*="width: 36px"]') })
+    .last();
+
+  const calendarArrows = calendarHeader.locator('button[style*="width: 36px"]');
   const leftArrow = calendarArrows.first();
   const rightArrow = calendarArrows.last();
 
@@ -395,6 +412,10 @@ async function navigateToMonth(page, d) {
 
   for (let i = 0; i < 24; i++) {
     const monthCount = await monthBtns.count();
+    if (monthCount === 0) {
+      throw new Error(`Lost the calendar! monthCount is 0.`);
+    }
+
     const yearCount = await yearBtns.count();
     
     let found = false;
