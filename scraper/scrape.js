@@ -412,8 +412,8 @@ async function navigateToMonth(page, d) {
   const leftArrow = calendarArrows.first();
   const rightArrow = calendarArrows.last();
 
-  const monthBtns = page.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) });
-  const yearBtns = page.locator('button[role="button"]').filter({ hasText: /\d{4}/ });
+  const monthBtns = calendarHeader.locator('button[role="button"]').filter({ hasText: new RegExp(MONTH_NAMES.join("|")) });
+  const yearBtns = calendarHeader.locator('button[role="button"]').filter({ hasText: /\d{4}/ });
 
   for (let i = 0; i < 72; i++) {
     const monthCount = await monthBtns.count();
