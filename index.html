@@ -590,7 +590,7 @@ function delta(cur,prev){
   return `<span class="${up?'up':'down'}">${up?"▲":"▼"} ${Math.abs(p).toFixed(1)}%</span> vs prior period`;
 }
 function renderTiles(days,prev){
-  if(DATA.trendIsDemo && DATA.totals){
+  if((!days || !days.length) && DATA.totals){
     const rev=DATA.totals.revenue||0, qty=DATA.totals.quantity||0;
     const avg=qty?rev/qty:0, top=(DATA.topProducts||[])[0];
     document.getElementById("tiles").innerHTML=`
