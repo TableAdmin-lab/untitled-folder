@@ -3,5 +3,13 @@
   "startedAt": "2026-07-03T18:04:41.825Z",
   "finishedAt": null,
   "error": null,
-  "steps": []
+  "steps": [
+    {
+      "n": 1,
+      "name": "login-page",
+      "shot": "step-01-login-page.png",
+      "at": "2026-07-03T18:04:46.896Z",
+      "ms": 5070
+    }
+  ]
 }
