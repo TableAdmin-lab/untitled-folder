@@ -501,9 +501,15 @@ async function navigateToMonth(page, d) {
    the grid) carry an extra class. We use a fallback if the class changes. */
 async function clickDay(page, d) {
   const day = String(d.getUTCDate());
+  const targetMonth = MONTH_NAMES[d.getUTCMonth()];
   
-  // Try the original class name first
-  const cell = page
+  // Locate the container holding this specific month's calendar sheet
+  const monthContainer = page.locator("div")
+    .filter({ has: page.locator("button[role=\"button\"]").filter({ hasText: new RegExp(`^${targetMonth}\\b`, "i") }) })
+    .last();
+
+  // Try the original class name first inside the specific month container
+  const cell = monthContainer
     .locator("div.r-1awozwy:not(.r-eu3ka)")
     .filter({ hasText: new RegExp(`^${day}$`) })
     .first();
@@ -521,7 +527,7 @@ async function clickDay(page, d) {
 
   try {
     // fallback if the class name ever changes
-    await page.getByText(day, { exact: true }).last().click();
+    await monthContainer.getByText(day, { exact: true }).last().click();
   } catch (e) {
     throw new Error(`clickDay: could not click ${ymd(d)} (${e.message})`);
   }
