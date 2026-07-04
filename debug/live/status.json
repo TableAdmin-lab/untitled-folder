@@ -1,36 +1,36 @@
 {
   "state": "passed",
-  "startedAt": "2026-07-04T12:08:47.002Z",
-  "finishedAt": "2026-07-04T12:09:07.144Z",
+  "startedAt": "2026-07-04T12:59:08.586Z",
+  "finishedAt": "2026-07-04T12:59:27.917Z",
   "error": null,
   "steps": [
     {
       "n": 1,
       "name": "login-page",
       "shot": "step-01-login-page.png",
-      "at": "2026-07-04T12:08:53.263Z",
-      "ms": 6261
+      "at": "2026-07-04T12:59:15.530Z",
+      "ms": 6944
     },
     {
       "n": 2,
       "name": "email-filled",
       "shot": "step-02-email-filled.png",
-      "at": "2026-07-04T12:08:54.624Z",
-      "ms": 1361
+      "at": "2026-07-04T12:59:16.934Z",
+      "ms": 1404
     },
     {
       "n": 3,
       "name": "password-filled",
       "shot": "step-03-password-filled.png",
-      "at": "2026-07-04T12:08:56.105Z",
-      "ms": 1481
+      "at": "2026-07-04T12:59:18.302Z",
+      "ms": 1368
     },
     {
       "n": 4,
       "name": "logged-in",
       "shot": "step-04-logged-in.png",
-      "at": "2026-07-04T12:09:05.772Z",
-      "ms": 9667
+      "at": "2026-07-04T12:59:26.605Z",
+      "ms": 8303
     }
   ]
 }
