@@ -46,7 +46,31 @@ function addDays(d, n) {
 }
 
 // Returns {start, end, reportDay} as Date objects (inclusive range).
-export function reportWindow(today = sastToday()) {
+export function reportWindow(today = sastToday(), mode = "auto", customStart = null, customEnd = null) {
+  if (mode === "custom" && customStart && customEnd) {
+    return {
+      reportDay: today,
+      start: new Date(customStart + "T00:00:00Z"),
+      end: new Date(customEnd + "T00:00:00Z")
+    };
+  }
+
+  let targetRdow = null;
+  if (mode === "monday") targetRdow = 1;
+  else if (mode === "wednesday") targetRdow = 3;
+  else if (mode === "friday") targetRdow = 5;
+
+  if (targetRdow !== null) {
+    const dow = today.getUTCDay();
+    let back = 0;
+    while ((dow - back + 70) % 7 !== targetRdow) back++;
+    const reportDay = addDays(today, -back);
+    
+    if (targetRdow === 1) return { reportDay, start: addDays(reportDay, -3), end: addDays(reportDay, -1) };
+    if (targetRdow === 3) return { reportDay, start: addDays(reportDay, -2), end: addDays(reportDay, -1) };
+    if (targetRdow === 5) return { reportDay, start: addDays(reportDay, -2), end: addDays(reportDay, -1) };
+  }
+
   const dow = today.getUTCDay(); // 0=Sun … 6=Sat
   // Most recent report day (Mon=1, Wed=3, Fri=5) on or before today.
   const reportDays = [1, 3, 5];
@@ -231,7 +255,12 @@ async function main() {
     console.error("Missing YOCO_EMAIL / YOCO_PASSWORD environment variables.");
     process.exit(1);
   }
-  const { start, end, reportDay } = reportWindow();
+  const { start, end, reportDay } = reportWindow(
+    sastToday(),
+    process.env.DATE_MODE || "auto",
+    process.env.START_DATE,
+    process.env.END_DATE
+  );
   console.log(
     `Report day ${ymd(reportDay)} → window ${ymd(start)} .. ${ymd(end)} (inclusive)`
   );

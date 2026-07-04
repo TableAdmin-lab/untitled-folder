@@ -2,6 +2,19 @@ name: Scrape Yoco data
 
 on:
   workflow_dispatch:
+    inputs:
+      date_mode:
+        description: "Scraping date mode (auto, monday, wednesday, friday, custom)"
+        required: false
+        default: "auto"
+      start_date:
+        description: "Custom start date (YYYY-MM-DD)"
+        required: false
+        default: ""
+      end_date:
+        description: "Custom end date (YYYY-MM-DD)"
+        required: false
+        default: ""
   schedule:
     - cron: "0 4 * * *" # 06:00 SAST (UTC+2, no DST)
 
@@ -42,6 +55,9 @@ jobs:
         env:
           YOCO_EMAIL: ${{ secrets.YOCO_EMAIL }}
           YOCO_PASSWORD: ${{ secrets.YOCO_PASSWORD }}
+          DATE_MODE: ${{ github.event.inputs.date_mode }}
+          START_DATE: ${{ github.event.inputs.start_date }}
+          END_DATE: ${{ github.event.inputs.end_date }}
         run: npm run scrape
 
       - name: Commit updated data

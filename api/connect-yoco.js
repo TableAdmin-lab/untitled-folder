@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
   if (req.method !== "POST") return json(res, 405, { ok: false, error: "Use POST" });
 
   try {
-    const { email, password } = await readJson(req);
+    const { email, password, date_mode, start_date, end_date } = await readJson(req);
     if (!email || !password) {
       return json(res, 400, { ok: false, error: "Yoco email and password are required" });
     }
@@ -96,7 +96,14 @@ module.exports = async (req, res) => {
     await github(`/actions/workflows/${encodeURIComponent(workflow)}/dispatches`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ref }),
+      body: JSON.stringify({
+        ref,
+        inputs: {
+          date_mode: String(date_mode || "auto"),
+          start_date: String(start_date || ""),
+          end_date: String(end_date || "")
+        }
+      }),
     });
 
     return json(res, 200, { ok: true, message: "Yoco connected and scrape workflow started" });

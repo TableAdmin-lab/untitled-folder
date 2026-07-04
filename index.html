@@ -400,6 +400,14 @@ input { font: inherit; }
 .fade-up-3 { animation-delay: 0.15s; }
 .fade-up-4 { animation-delay: 0.2s; }
 
+.tab-view.hidden { display: none !important; }
+.search-input {
+  border: 1px solid var(--border); border-radius: var(--radius-xs);
+  padding: 8px 12px; font-size: 13px; color: var(--text); background: var(--card);
+  transition: all 0.15s; width: 240px;
+}
+.search-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */
@@ -456,14 +464,11 @@ input { font: inherit; }
       <span>LiquorPOS</span>
     </div>
     <nav class="sidebar-nav">
-      <a href="#" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></a>
-      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg><span>Transactions</span></a>
-      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span>Products</span></a>
-      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg><span>Categories</span></a>
-      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Staff</span></a>
-      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Customers</span></a>
-      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg><span>Reports</span></a>
-      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg><span>Inventory</span></a>
+      <button class="nav-item active" data-tab="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></button>
+      <button class="nav-item" data-tab="products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span>Products</span></button>
+      <button class="nav-item" data-tab="categories"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg><span>Categories</span></button>
+      <button class="nav-item" data-tab="staff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Staff</span></button>
+      <button class="nav-item" data-tab="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg><span>Reports</span></button>
       <button class="nav-item" id="openConnectSide" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
     </nav>
     <div class="sidebar-spacer"></div>
@@ -504,79 +509,187 @@ input { font: inherit; }
     </header>
 
     <main class="content">
-      <!-- KPI Cards -->
-      <div class="kpi-grid" id="kpiGrid"></div>
+      <!-- 1. DASHBOARD VIEW -->
+      <div id="view-dashboard" class="tab-view animate-fade-in">
+        <!-- KPI Cards -->
+        <div class="kpi-grid" id="kpiGrid"></div>
 
-      <!-- Charts: Sales Trend + Sales by Hour -->
-      <div class="grid-wrap row-7-3">
-        <div class="card">
-          <div class="card-header">
-            <h2>Sales Trend</h2>
-            <select class="period-select" id="trendPeriod"><option>This Week</option><option>This Month</option></select>
+        <!-- Charts: Sales Trend + Sales by Hour -->
+        <div class="grid-wrap row-7-3">
+          <div class="card">
+            <div class="card-header">
+              <h2>Sales Trend</h2>
+              <select class="period-select" id="trendPeriod"><option>This Week</option><option>This Month</option></select>
+            </div>
+            <div class="chart-container"><svg id="trendChart" width="100%" height="260"></svg><div class="tooltip" id="trendTT"></div></div>
+            <div class="trend-stats" id="trendStats"></div>
           </div>
-          <div class="chart-container"><svg id="trendChart" width="100%" height="260"></svg><div class="tooltip" id="trendTT"></div></div>
-          <div class="trend-stats" id="trendStats"></div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Sales by Hour</h2>
+              <select class="period-select" id="hourPeriod"><option>Today</option></select>
+            </div>
+            <div class="chart-container"><svg id="hourChart" width="100%" height="260"></svg></div>
+            <div class="hour-stats" id="hourStats"></div>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-header">
-            <h2>Sales by Hour</h2>
-            <select class="period-select" id="hourPeriod"><option>Today</option></select>
+
+        <!-- Products + Category Donut -->
+        <div class="grid-wrap row-2">
+          <div class="card">
+            <div class="card-header">
+              <h2>Top Selling Products</h2>
+              <button class="link-btn" id="productsToggle">View all</button>
+            </div>
+            <table class="data-table" id="productsTable">
+              <thead><tr><th style="width:40px">#</th><th>Product</th><th class="right">Qty Sold</th><th class="right">Revenue</th></tr></thead>
+              <tbody id="productsBody"></tbody>
+            </table>
           </div>
-          <div class="chart-container"><svg id="hourChart" width="100%" height="260"></svg></div>
-          <div class="hour-stats" id="hourStats"></div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Revenue by Category</h2>
+              <select class="period-select"><option>This Week</option></select>
+            </div>
+            <div id="categoryDonut" class="donut-container"></div>
+          </div>
+        </div>
+
+        <!-- Staff + Payment Donut -->
+        <div class="grid-wrap row-2">
+          <div class="card">
+            <div class="card-header">
+              <h2>Staff Performance</h2>
+              <select class="period-select"><option>This Week</option></select>
+            </div>
+            <table class="data-table" id="staffTable">
+              <thead><tr><th>Staff</th><th class="right">Revenue</th><th class="right">Transactions</th><th class="right">Avg. Sale</th><th style="width:80px"></th></tr></thead>
+              <tbody id="staffBody"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2>Payment Methods</h2></div>
+            <div id="paymentDonut" class="donut-container"></div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card" id="txnCard">
+          <div class="card-header">
+            <h2>Recent Transactions</h2>
+            <button class="link-btn" id="txnToggle">View all</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table" id="txnTable">
+              <thead><tr><th>Time</th><th>Item</th><th>Staff</th><th>Category</th><th class="right">Qty</th><th class="right">Amount</th><th>Status</th><th>Payment</th></tr></thead>
+              <tbody id="txnBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- Products + Category Donut -->
-      <div class="grid-wrap row-2">
-        <div class="card">
+      <!-- 2. PRODUCTS VIEW -->
+      <div id="view-products" class="tab-view hidden">
+        <div class="card fade-up">
           <div class="card-header">
-            <h2>Top Selling Products</h2>
-            <button class="link-btn" id="productsToggle">View all</button>
+            <h2>All Products</h2>
+            <input type="text" id="tabProductSearch" class="search-input" placeholder="Search products...">
           </div>
-          <table class="data-table" id="productsTable">
-            <thead><tr><th style="width:40px">#</th><th>Product</th><th class="right">Qty Sold</th><th class="right">Revenue</th></tr></thead>
-            <tbody id="productsBody"></tbody>
-          </table>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <h2>Revenue by Category</h2>
-            <select class="period-select"><option>This Week</option></select>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead><tr><th style="width:50px">#</th><th>Product Description</th><th class="right">Units Sold</th><th class="right">Total Revenue</th></tr></thead>
+              <tbody id="tabProductsBody"></tbody>
+            </table>
           </div>
-          <div id="categoryDonut" class="donut-container"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-light)">
+            <span id="productPageInfo" style="font-size:13px;color:var(--muted);font-weight:500">Page 1 of 1</span>
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="prevProductPage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Previous</button>
+              <button class="btn" id="nextProductPage">Next <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-left:4px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Staff + Payment Donut -->
-      <div class="grid-wrap row-2">
-        <div class="card">
-          <div class="card-header">
-            <h2>Staff Performance</h2>
-            <select class="period-select"><option>This Week</option></select>
+      <!-- 3. CATEGORIES VIEW -->
+      <div id="view-categories" class="tab-view hidden">
+        <div class="grid-wrap row-7-3">
+          <div class="card fade-up">
+            <div class="card-header">
+              <h2>Categories Performance</h2>
+              <input type="text" id="tabCategorySearch" class="search-input" placeholder="Search categories..." style="width:200px">
+            </div>
+            <div style="overflow-x:auto">
+              <table class="data-table">
+                <thead><tr><th style="width:50px">#</th><th>Category Name</th><th class="right">Items Sold</th><th class="right">Total Revenue</th><th class="right">Revenue Share</th></tr></thead>
+                <tbody id="tabCategoriesBody"></tbody>
+              </table>
+            </div>
           </div>
-          <table class="data-table" id="staffTable">
-            <thead><tr><th>Staff</th><th class="right">Revenue</th><th class="right">Transactions</th><th class="right">Avg. Sale</th><th style="width:80px"></th></tr></thead>
-            <tbody id="staffBody"></tbody>
-          </table>
-        </div>
-        <div class="card">
-          <div class="card-header"><h2>Payment Methods</h2></div>
-          <div id="paymentDonut" class="donut-container"></div>
+          <div class="card fade-up" style="display:flex;flex-direction:column;justify-content:center">
+            <div class="card-header"><h2>Category Share</h2></div>
+            <div id="tabCategoryDonut" class="donut-container"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Recent Transactions -->
-      <div class="card" id="txnCard">
-        <div class="card-header">
-          <h2>Recent Transactions</h2>
-          <button class="link-btn" id="txnToggle">View all</button>
+      <!-- 4. STAFF VIEW -->
+      <div id="view-staff" class="tab-view hidden">
+        <div class="card fade-up">
+          <div class="card-header">
+            <h2>Cashier Performance Breakdown</h2>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead><tr><th style="width:50px">#</th><th>Staff Member</th><th class="right">Transactions Logged</th><th class="right">Total Revenue Generated</th><th class="right">Average Sales Basket</th><th style="width:120px"></th></tr></thead>
+              <tbody id="tabStaffBody"></tbody>
+            </table>
+          </div>
         </div>
-        <div style="overflow-x:auto">
-          <table class="data-table" id="txnTable">
-            <thead><tr><th>Time</th><th>Item</th><th>Staff</th><th>Category</th><th class="right">Qty</th><th class="right">Amount</th><th>Status</th><th>Payment</th></tr></thead>
-            <tbody id="txnBody"></tbody>
-          </table>
+      </div>
+
+      <!-- 5. REPORTS VIEW -->
+      <div id="view-reports" class="tab-view hidden">
+        <div class="grid-wrap row-2">
+          <div class="card fade-up">
+            <div class="card-header"><h2>Data Pipeline & Active Status</h2></div>
+            <div style="display:flex;flex-direction:column;gap:14px;font-size:13.5px">
+              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light)">
+                <span style="font-weight:600;color:var(--muted)">Report Day</span>
+                <span id="reportMetaDay" style="font-weight:700">Loading...</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light)">
+                <span style="font-weight:600;color:var(--muted)">Data Scraping Timestamp</span>
+                <span id="reportMetaScrapeTime" style="font-weight:700">Loading...</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light)">
+                <span style="font-weight:600;color:var(--muted)">Transaction Window Start</span>
+                <span id="reportMetaWindowStart" style="font-weight:700">Loading...</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light)">
+                <span style="font-weight:600;color:var(--muted)">Transaction Window End</span>
+                <span id="reportMetaWindowEnd" style="font-weight:700">Loading...</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:10px 0">
+                <span style="font-weight:600;color:var(--muted)">Pipeline Code Branch</span>
+                <span style="font-weight:700;color:var(--primary)">data</span>
+              </div>
+            </div>
+          </div>
+          <div class="card fade-up">
+            <div class="card-header"><h2>Scraper Control Panel</h2></div>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:20px">You can manually launch the Yoco Products Report Scraper execution. Running the scraper connects to Yoco to retrieve the latest inventory transaction details.</p>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <button class="btn btn-primary" id="triggerScraperBtn" style="justify-content:center;padding:12px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+                Trigger Pipeline Scraper Run
+              </button>
+              <button class="btn" id="exportBtnReport" style="justify-content:center;padding:12px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export All Sales Data (CSV)
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -620,7 +733,27 @@ input { font: inherit; }
       <form class="form-grid" id="connectForm" autocomplete="on" onsubmit="event.preventDefault();connectYoco();">
         <div class="field"><label for="yocoEmail">Email address</label><input type="email" id="yocoEmail" placeholder="you@example.com" required autocomplete="email"></div>
         <div class="field"><label for="yocoPassword">Password</label><input type="password" id="yocoPassword" placeholder="Your Yoco password" required autocomplete="current-password"></div>
-        <div style="display:flex;gap:10px">
+        <div class="field">
+          <label for="yocoDateMode">Reporting Period</label>
+          <select id="yocoDateMode" style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-size:14px;color:var(--text);background:var(--card);transition:all 0.15s;outline:none;">
+            <option value="auto">Automatic (Based on execution day)</option>
+            <option value="monday">Monday Frame (Last Fri, Sat, Sun)</option>
+            <option value="wednesday">Wednesday Frame (Last Mon, Tue)</option>
+            <option value="friday">Friday Frame (Last Wed, Thu)</option>
+            <option value="custom">Custom Date Range...</option>
+          </select>
+        </div>
+        <div class="field" id="customDateFields" style="display:none;grid-template-columns:1fr 1fr;gap:12.5px">
+          <div>
+            <label for="yocoStartDate">Start Date</label>
+            <input type="date" id="yocoStartDate" style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;">
+          </div>
+          <div>
+            <label for="yocoEndDate">End Date</label>
+            <input type="date" id="yocoEndDate" style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px">
           <button type="submit" class="btn btn-primary" id="connectYocoBtn" style="flex:1;justify-content:center;padding:12px"><span>Connect and load data</span></button>
           <a class="btn" id="workflowLink" href="#" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M3 3v18h18"/><path d="m7 16 4-4 3 3 5-7"/></svg>
@@ -675,6 +808,11 @@ const CONNECT_ENDPOINT = window.YOCO_CONNECT_ENDPOINT || '/api/connect-yoco';
    ============================================================ */
 let DATA = null, LIVE = null, MODE = 'empty', BOOTED = false;
 let PRODUCTS_EXPANDED = false, TXN_EXPANDED = false;
+let CURRENT_TAB = 'dashboard';
+let PRODUCTS_PAGE = 1;
+const PRODUCTS_PER_PAGE = 10;
+let productSearchQuery = '';
+let categorySearchQuery = '';
 
 /* ============================================================
    LOADING PROGRESS
@@ -788,7 +926,16 @@ async function waitForLiveData(lastScrapedTime) {
 async function connectYoco() {
   const email = document.getElementById('yocoEmail').value.trim();
   const password = document.getElementById('yocoPassword').value;
+  const date_mode = document.getElementById('yocoDateMode').value;
+  const start_date = document.getElementById('yocoStartDate').value;
+  const end_date = document.getElementById('yocoEndDate').value;
+
   if (!email || !password) { alert('Enter your Yoco email and password.'); return; }
+  if (date_mode === 'custom' && (!start_date || !end_date)) {
+    alert('Please enter both Start Date and End Date for custom date range.');
+    return;
+  }
+
   if (CONNECT_ENDPOINT.includes('YOUR-VERCEL-PROJECT') || (location.hostname.endsWith('.github.io') && CONNECT_ENDPOINT.startsWith('/'))) {
     setConnectStatus('Vercel backend URL not configured. Set window.YOCO_CONNECT_ENDPOINT.', 'error');
     return;
@@ -799,7 +946,11 @@ async function connectYoco() {
   btnLabel.textContent = 'Connecting…';
   setConnectStatus('Securing credentials and starting scraper…');
   try {
-    const res = await fetch(CONNECT_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const res = await fetch(CONNECT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, date_mode, start_date, end_date })
+    });
     const payload = await res.json().catch(() => ({}));
     if (!res.ok || !payload.ok) throw new Error(payload.error || 'Connect failed (' + res.status + ')');
     const lastScrapedTime = LIVE ? new Date(LIVE.scrapedAt).getTime() : 0;
@@ -813,6 +964,125 @@ async function connectYoco() {
     btn.disabled = false;
     btnLabel.textContent = 'Connect and load data';
   }
+}
+
+/* ============================================================
+   TAB SWITCHING & VIEW RENDERING
+   ============================================================ */
+function switchTab(tabName) {
+  CURRENT_TAB = tabName;
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  document.querySelectorAll('.tab-view').forEach(view => {
+    view.classList.toggle('hidden', view.id !== `view-${tabName}`);
+  });
+  
+  if (tabName === 'products') {
+    renderProductsTab();
+  } else if (tabName === 'categories') {
+    renderCategoriesTab();
+  } else if (tabName === 'staff') {
+    renderStaffTab();
+  } else if (tabName === 'reports') {
+    renderReportsTab();
+  } else {
+    render(); // Dashboard
+  }
+}
+
+function renderProductsTab() {
+  if (!DATA || !DATA.topProducts) return;
+  
+  let filtered = DATA.topProducts;
+  if (productSearchQuery) {
+    const q = productSearchQuery.toLowerCase();
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(q));
+  }
+  
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / PRODUCTS_PER_PAGE) || 1;
+  if (PRODUCTS_PAGE > totalPages) PRODUCTS_PAGE = totalPages;
+  if (PRODUCTS_PAGE < 1) PRODUCTS_PAGE = 1;
+  
+  const startIdx = (PRODUCTS_PAGE - 1) * PRODUCTS_PER_PAGE;
+  const pageItems = filtered.slice(startIdx, startIdx + PRODUCTS_PER_PAGE);
+  
+  const tbody = document.getElementById('tabProductsBody');
+  tbody.innerHTML = pageItems.length ? pageItems.map((p, i) => {
+    const globalIdx = startIdx + i + 1;
+    const rankClass = globalIdx === 1 ? 'gold' : globalIdx === 2 ? 'silver' : globalIdx === 3 ? 'bronze' : '';
+    return `<tr>
+      <td><span class="rank-badge ${rankClass}">${globalIdx}</span></td>
+      <td style="font-weight:600">${esc(p.name)}</td>
+      <td class="right mono">${(p.quantity || 0).toLocaleString('en-ZA')}</td>
+      <td class="right mono" style="font-weight:700;color:var(--primary)">${ZAR(p.revenue || 0)}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--muted)">No products found matching "${esc(productSearchQuery)}"</td></tr>`;
+  
+  document.getElementById('productPageInfo').textContent = `Page ${PRODUCTS_PAGE} of ${totalPages} (${totalItems} items)`;
+  document.getElementById('prevProductPage').disabled = PRODUCTS_PAGE === 1;
+  document.getElementById('nextProductPage').disabled = PRODUCTS_PAGE === totalPages;
+}
+
+function renderCategoriesTab() {
+  if (!DATA) return;
+  const cats = DATA.topCategories || [];
+  const totalRev = DATA.totals?.revenue || 1;
+  
+  let filtered = cats;
+  if (categorySearchQuery) {
+    const q = categorySearchQuery.toLowerCase();
+    filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+  }
+  
+  const tbody = document.getElementById('tabCategoriesBody');
+  tbody.innerHTML = filtered.length ? filtered.map((c, i) => {
+    const pct = ((c.revenue || 0) / totalRev * 100).toFixed(1);
+    return `<tr>
+      <td><span class="rank-badge">${i + 1}</span></td>
+      <td style="font-weight:600">${esc(c.name)}</td>
+      <td class="right mono">${(c.quantity || 0).toLocaleString('en-ZA')}</td>
+      <td class="right mono" style="font-weight:700;color:var(--primary)">${ZAR(c.revenue || 0)}</td>
+      <td class="right mono" style="font-weight:600;color:var(--muted)">${pct}%</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted)">No categories found matching "${esc(categorySearchQuery)}"</td></tr>`;
+  
+  if (cats.length) {
+    renderDonut('tabCategoryDonut', cats.map(c => ({ name: c.name, value: c.revenue || 0 })));
+  } else {
+    document.getElementById('tabCategoryDonut').innerHTML = '<div style="color:var(--muted);padding:24px;text-align:center">No category data</div>';
+  }
+}
+
+function renderStaffTab() {
+  if (!DATA) return;
+  const staff = DATA.topStaff || [];
+  const maxRev = Math.max(...staff.map(s => s.revenue || 0)) || 1;
+  const staffColors = [COLORS.primary, COLORS.success, COLORS.warning, COLORS.purple, COLORS.teal];
+  
+  const tbody = document.getElementById('tabStaffBody');
+  tbody.innerHTML = staff.length ? staff.map((s, i) => {
+    const initials = (s.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const avg = s.quantity ? (s.revenue / s.quantity) : 0;
+    const pct = ((s.revenue || 0) / maxRev * 100).toFixed(0);
+    return `<tr>
+      <td><span class="rank-badge">${i + 1}</span></td>
+      <td><div class="staff-cell"><span class="staff-avatar" style="background:${staffColors[i % staffColors.length]}22;color:${staffColors[i % staffColors.length]}">${initials}</span><span style="font-weight:600">${esc(s.name)}</span></div></td>
+      <td class="right mono">${(s.quantity || 0).toLocaleString('en-ZA')}</td>
+      <td class="right mono" style="font-weight:700;color:${staffColors[i % staffColors.length]}">${ZAR(s.revenue || 0)}</td>
+      <td class="right mono">${ZAR(avg)}</td>
+      <td><div class="progress-bar" style="width:100%"><div class="progress-fill" style="width:${pct}%;background:${staffColors[i % staffColors.length]}"></div></div></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">No staff data found</td></tr>`;
+}
+
+function renderReportsTab() {
+  if (!DATA) return;
+  document.getElementById('reportMetaDay').textContent = DATA.report?.reportDay || 'N/A';
+  document.getElementById('reportMetaScrapeTime').textContent = DATA.scrapedAt ? new Date(DATA.scrapedAt).toLocaleString('en-ZA') : 'N/A';
+  document.getElementById('reportMetaWindowStart').textContent = DATA.report?.start ? fmtD(DATA.report.start) : 'N/A';
+  document.getElementById('reportMetaWindowEnd').textContent = DATA.report?.end ? fmtD(DATA.report.end) : 'N/A';
 }
 
 /* ============================================================
@@ -866,8 +1136,48 @@ function boot(mode) {
     document.getElementById('applyFilters').addEventListener('click', () => { applyFilters(); closeFilters(); });
     document.getElementById('clearFilters').addEventListener('click', () => { clearFilters(); closeFilters(); });
     document.getElementById('exportBtn').addEventListener('click', exportCSV);
+    document.getElementById('exportBtnReport').addEventListener('click', exportCSV);
     document.getElementById('productsToggle').addEventListener('click', () => { PRODUCTS_EXPANDED = !PRODUCTS_EXPANDED; renderProducts(); });
     document.getElementById('txnToggle').addEventListener('click', () => { TXN_EXPANDED = !TXN_EXPANDED; renderTransactions(); });
+    
+    // Sidebar tabs navigation click handler
+    document.querySelectorAll('.sidebar-nav button[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchTab(btn.dataset.tab);
+      });
+    });
+
+    // Control panel trigger scraper
+    document.getElementById('triggerScraperBtn').addEventListener('click', openConnect);
+
+    // Products tab search & pagination
+    document.getElementById('tabProductSearch').addEventListener('input', e => {
+      productSearchQuery = e.target.value;
+      PRODUCTS_PAGE = 1;
+      renderProductsTab();
+    });
+    document.getElementById('prevProductPage').addEventListener('click', () => {
+      if (PRODUCTS_PAGE > 1) {
+        PRODUCTS_PAGE--;
+        renderProductsTab();
+      }
+    });
+    document.getElementById('nextProductPage').addEventListener('click', () => {
+      PRODUCTS_PAGE++;
+      renderProductsTab();
+    });
+
+    // Categories tab search
+    document.getElementById('tabCategorySearch').addEventListener('input', e => {
+      categorySearchQuery = e.target.value;
+      renderCategoriesTab();
+    });
+
+    // Toggle custom date inputs in connect modal
+    document.getElementById('yocoDateMode').addEventListener('change', e => {
+      document.getElementById('customDateFields').style.display = e.target.value === 'custom' ? 'grid' : 'none';
+    });
+
     setWorkflowLink();
     BOOTED = true;
   }
