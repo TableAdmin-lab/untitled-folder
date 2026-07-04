@@ -960,12 +960,13 @@ function setWorkflowLink() {
 
 async function fetchLiveData() {
   const repo = githubRepoSlug();
-  const cacheBuster = Date.now() + '_' + Math.random().toString(36).slice(2);
-  let url = 'data/latest.json?t=' + cacheBuster;
-  if (repo !== 'OWNER/REPO') {
-    url = 'https://raw.githubusercontent.com/' + repo + '/data/data/latest.json?t=' + cacheBuster;
+  if (repo === 'OWNER/REPO') {
+    const r = await fetch('data/latest.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error(String(r.status));
+    return r.json();
   }
-  const r = await fetch(url, { cache: 'no-store' });
+  const endpoint = window.YOCO_CONNECT_ENDPOINT.replace('connect-yoco', 'get-latest-data');
+  const r = await fetch(endpoint + '?t=' + Date.now(), { cache: 'no-store' });
   if (!r.ok) throw new Error(String(r.status));
   const d = await r.json();
   if (!(d.days?.length || d.topProducts?.length || d.topBrands?.length || d.topCategories?.length)) throw new Error('empty report');
