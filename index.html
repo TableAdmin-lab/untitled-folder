@@ -841,6 +841,17 @@ input { font: inherit; }
       </form>
       <div class="connect-status" id="connectStatus" aria-live="polite"></div>
       <div class="spinner" id="connectSpinner"></div>
+      
+      <div class="connect-progress-wrap" id="connectProgressWrap" style="display:none;margin-top:16px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px;">
+          <span id="connectProgressStage" style="color:var(--muted);">Initializing...</span>
+          <span id="connectProgressPercent" style="color:var(--primary);">0%</span>
+        </div>
+        <div style="width:100%;height:8px;background:var(--border);border-radius:999px;overflow:hidden;">
+          <div id="connectProgressFill" style="width:0%;height:100%;background:var(--primary);border-radius:999px;transition:width 0.4s ease;"></div>
+        </div>
+      </div>
+
       <div class="note">Your Yoco password is sent only to the Vercel backend over HTTPS. The backend stores it as a GitHub Actions secret, triggers the scrape workflow, and does not expose the password.</div>
     </div>
   </div>
@@ -917,6 +928,7 @@ function hideProgress() {
 function openConnect() { document.getElementById('connectModal').classList.add('show'); }
 function closeConnect() {
   document.getElementById('connectModal').classList.remove('show');
+  hideConnectProgress();
   if (location.hash === '#connect') history.replaceState(null, '', location.pathname + location.search);
 }
 function openFilters() {
@@ -937,6 +949,58 @@ function setConnectStatus(msg, type) {
     const isWorking = msg && !type;
     spinner.style.display = isWorking ? 'block' : 'none';
   }
+}
+
+let progressInterval = null;
+function startConnectProgress() {
+  const wrap = document.getElementById('connectProgressWrap');
+  const stage = document.getElementById('connectProgressStage');
+  const percentText = document.getElementById('connectProgressPercent');
+  const fill = document.getElementById('connectProgressFill');
+  
+  if (!wrap) return;
+  wrap.style.display = 'block';
+  
+  if (progressInterval) clearInterval(progressInterval);
+  
+  let pct = 0;
+  const duration = 90000; // 90 seconds
+  const start = Date.now();
+  
+  progressInterval = setInterval(() => {
+    const elapsed = Date.now() - start;
+    pct = Math.min(99, Math.floor((elapsed / duration) * 100));
+    
+    if (percentText) percentText.textContent = pct + '%';
+    if (fill) fill.style.width = pct + '%';
+    
+    if (stage) {
+      if (pct < 10) stage.textContent = 'Launching pipeline scraper…';
+      else if (pct < 25) stage.textContent = 'Setting up runtime environment…';
+      else if (pct < 45) stage.textContent = 'Signing in to Yoco portal…';
+      else if (pct < 65) stage.textContent = 'Downloading sales data spreadsheet…';
+      else if (pct < 80) stage.textContent = 'Parsing transaction entries…';
+      else if (pct < 95) stage.textContent = 'Pushing data package to dashboard…';
+      else stage.textContent = 'Completing scrape. Checking data…';
+    }
+  }, 200);
+}
+
+function completeConnectProgress() {
+  if (progressInterval) clearInterval(progressInterval);
+  const stage = document.getElementById('connectProgressStage');
+  const percentText = document.getElementById('connectProgressPercent');
+  const fill = document.getElementById('connectProgressFill');
+  
+  if (stage) stage.textContent = 'Import completed!';
+  if (percentText) percentText.textContent = '100%';
+  if (fill) fill.style.width = '100%';
+}
+
+function hideConnectProgress() {
+  if (progressInterval) clearInterval(progressInterval);
+  const wrap = document.getElementById('connectProgressWrap');
+  if (wrap) wrap.style.display = 'none';
 }
 
 /* ============================================================
@@ -984,6 +1048,7 @@ async function waitForLiveData(lastScrapedTime) {
       const d = await fetchLiveData();
       const newTime = new Date(d.scrapedAt).getTime();
       if (newTime > lastScrapedTime) {
+        completeConnectProgress();
         LIVE = d; DATA = d; DATA.mode = 'live';
         boot('live');
         setConnectStatus('Connected. Live data is ready.', 'success');
@@ -992,6 +1057,7 @@ async function waitForLiveData(lastScrapedTime) {
       }
     } catch (err) { console.warn('Polling:', err); }
   }
+  hideConnectProgress();
   setConnectStatus('Scraper started but data not published yet. Refresh shortly.', 'success');
   return false;
 }
@@ -1036,8 +1102,10 @@ async function connectYoco() {
     if (!res.ok || !payload.ok) throw new Error(payload.error || 'Connect failed (' + res.status + ')');
     document.getElementById('yocoPassword').value = '';
     setConnectStatus('Login saved. Scraper is running…');
+    startConnectProgress();
     await waitForLiveData(lastScrapedTime);
   } catch (err) {
+    hideConnectProgress();
     setConnectStatus(err.message || 'Could not connect. Try again.', 'error');
   } finally {
     document.getElementById('yocoPassword').value = '';
