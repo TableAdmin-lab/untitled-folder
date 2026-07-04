@@ -1,7 +1,7 @@
 {
-  "state": "running",
+  "state": "passed",
   "startedAt": "2026-07-04T12:08:47.002Z",
-  "finishedAt": null,
+  "finishedAt": "2026-07-04T12:09:07.144Z",
   "error": null,
   "steps": [
     {
