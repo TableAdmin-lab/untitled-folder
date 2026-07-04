@@ -46,7 +46,7 @@ module.exports = async (req, res) => {
     // 1. Get the latest workflow run for scrape.yml
     const workflow = process.env.GITHUB_WORKFLOW_FILE || "scrape.yml";
     const runsRes = await githubApi(
-      `/actions/workflows/${encodeURIComponent(workflow)}/runs?per_page=1&status=completed&status=in_progress&status=queued`
+      `/actions/workflows/${encodeURIComponent(workflow)}/runs?per_page=1`
     );
     if (!runsRes.ok) {
       const text = await runsRes.text();
