@@ -852,6 +852,7 @@ function setConnectStatus(msg, type) {
    GITHUB & DATA FETCHING (PRESERVED)
    ============================================================ */
 function githubRepoSlug() {
+  if (window.GITHUB_REPO) return window.GITHUB_REPO;
   const host = location.hostname;
   if (host.endsWith('.github.io')) {
     const owner = host.replace('.github.io', '');
@@ -1110,18 +1111,11 @@ function boot(mode) {
   document.getElementById('emptyState').classList.toggle('show', isEmpty);
   document.getElementById('app').classList.toggle('hidden', isEmpty);
 
-  if (isEmpty) {
-    if (!BOOTED) {
-      document.getElementById('emptyConnectBtn').addEventListener('click', openConnect);
-      document.getElementById('closeConnect').addEventListener('click', closeConnect);
-      setWorkflowLink();
-      BOOTED = true;
-    }
-    setTimeout(hideProgress, 300);
-    return;
-  }
-
   if (!BOOTED) {
+    // Empty state triggers
+    document.getElementById('emptyConnectBtn').addEventListener('click', openConnect);
+    
+    // Live dashboard triggers
     document.getElementById('openConnectSide').addEventListener('click', openConnect);
     document.getElementById('closeConnect').addEventListener('click', closeConnect);
     document.getElementById('filterBtn').addEventListener('click', openFilters);
@@ -1174,6 +1168,11 @@ function boot(mode) {
 
     setWorkflowLink();
     BOOTED = true;
+  }
+
+  if (isEmpty) {
+    setTimeout(hideProgress, 300);
+    return;
   }
 
   render();
