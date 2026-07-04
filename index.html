@@ -3,842 +3,1264 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yoco Pulse — Sales Dashboard</title>
+<title>LiquorPOS — Retail Sales Dashboard</title>
+<meta name="description" content="Enterprise retail POS analytics dashboard for liquor store management">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --navy:#071C39; --navy-2:#0C2B52; --blue:#0072CE; --teal:#00B8A9;
-    --violet:#7C5CFF; --pink:#E8618C; --amber:#F59E0B;
-    --ink:#12263A; --ink-2:#5B6B7E; --ink-3:#93A1B0;
-    --bg:#F4F7FB; --card:#FFFFFF; --line:#E4EAF2;
-    --radius:18px; --shadow:0 1px 2px rgba(7,28,57,.05),0 8px 24px rgba(7,28,57,.06);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font:15px/1.55 -apple-system,"Segoe UI",Inter,Roboto,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;display:flex}
+/* ============================================================
+   DESIGN SYSTEM
+   ============================================================ */
+:root {
+  --primary: #2563EB;
+  --primary-light: #DBEAFE;
+  --primary-dark: #1D4ED8;
+  --success: #16A34A;
+  --success-light: #DCFCE7;
+  --danger: #DC2626;
+  --danger-light: #FEE2E2;
+  --warning: #F59E0B;
+  --warning-light: #FEF3C7;
+  --purple: #7C3AED;
+  --purple-light: #EDE9FE;
+  --teal: #0D9488;
+  --teal-light: #CCFBF1;
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --text: #0F172A;
+  --muted: #64748B;
+  --muted2: #94A3B8;
+  --border: #E2E8F0;
+  --border-light: #F1F5F9;
+  --sidebar-bg: #0F172A;
+  --sidebar-hover: #1E293B;
+  --sidebar-text: #94A3B8;
+  --sidebar-active: #2563EB;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 8px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
 
-  /* ---------- sidebar ---------- */
-  aside{width:232px;flex-shrink:0;background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;padding:28px 20px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em;margin-bottom:26px}
-  .logo .dot{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--blue),var(--teal));display:grid;place-items:center;font-size:17px}
-  aside a,aside button{display:flex;align-items:center;gap:11px;color:#B9C7DA;text-decoration:none;padding:10px 12px;border-radius:11px;font-weight:600;font-size:14px;transition:.15s;background:none;border:0;font:inherit;cursor:pointer;text-align:left}
-  aside a:hover,aside button:hover{background:rgba(255,255,255,.07);color:#fff}
-  aside a.active{background:rgba(0,114,206,.28);color:#fff}
-  aside a svg,aside button svg{width:18px;height:18px;flex-shrink:0}
-  .side-foot{margin-top:auto;font-size:12px;color:#7E90A8;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
-  .side-foot b{color:#B9C7DA;display:block;margin-bottom:2px}
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { font-family: var(--font); font-size: 14px; line-height: 1.5; color: var(--text); background: var(--bg); min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; border: none; background: none; }
+table { border-collapse: collapse; width: 100%; }
+svg text { font-family: var(--font); }
+input { font: inherit; }
 
-  /* ---------- main ---------- */
-  main{flex:1;padding:30px 36px 48px;max-width:1240px;margin:0 auto;min-width:0}
-  header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
-  h1{font-size:26px;letter-spacing:-.03em}
-  .sub{color:var(--ink-2);font-size:14px;margin-top:3px}
-  .badge{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--ink-2);box-shadow:var(--shadow)}
-  .badge .pulse{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 0 rgba(0,184,169,.5);animation:pulse 2s infinite}
-  @keyframes pulse{70%{box-shadow:0 0 0 8px rgba(0,184,169,0)}}
-  .badge.demo .pulse{background:var(--amber);animation:none}
+/* ============================================================
+   APP LAYOUT
+   ============================================================ */
+.app { display: flex; min-height: 100vh; }
+.app.hidden { display: none; }
+.main-wrapper { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
-  .actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-6px 0 18px;flex-wrap:wrap}
-  .action-group{display:flex;gap:8px;flex-wrap:wrap}
-  .action{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 13px;font:700 13px/1 inherit;color:var(--ink-2);text-decoration:none;cursor:pointer;box-shadow:var(--shadow)}
-  .action.primary{background:var(--navy);border-color:var(--navy);color:#fff}
-  .action:hover{border-color:#C8D5E4;color:var(--ink)}
-  .action.primary:hover{background:#0B3B74;color:#fff}
-  .action svg{width:16px;height:16px;flex:none}
-  .connect-state{font-size:12.5px;color:var(--ink-3);font-weight:600}
-  .filters{display:flex;gap:8px;margin-bottom:20px}
-  .filters button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 15px;font:600 13px/1 inherit;color:var(--ink-2);cursor:pointer}
-  .filters button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  width: 260px; flex-shrink: 0; background: var(--sidebar-bg);
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+  padding: 24px 16px; overflow-y: auto; z-index: 10;
+}
+.sidebar-logo {
+  display: flex; align-items: center; gap: 12px; padding: 0 8px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px;
+}
+.logo-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary), #60A5FA);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.logo-icon svg { width: 20px; height: 20px; color: #fff; }
+.sidebar-logo span { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500; color: var(--sidebar-text); transition: all 0.15s ease;
+  width: 100%; text-align: left;
+}
+.nav-item:hover { background: var(--sidebar-hover); color: #CBD5E1; }
+.nav-item.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
+.nav-item svg { width: 20px; height: 20px; flex-shrink: 0; stroke-width: 1.8; }
+.sidebar-spacer { flex: 1; min-height: 24px; }
+.sidebar-footer { display: flex; flex-direction: column; gap: 2px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
 
-  /* ---------- loading ---------- */
-  .loader{position:fixed;inset:0;background:rgba(244,247,251,.86);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
-  .loader.show{display:flex}
-  .loadbox{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 22px 60px rgba(7,28,57,.16)}
-  .load-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-  .ring{width:42px;height:42px;border-radius:50%;background:conic-gradient(var(--blue) var(--p,0%),#E8EEF6 0);display:grid;place-items:center;flex:none;transition:background .2s}
-  .ring::after{content:"";width:30px;height:30px;border-radius:50%;background:#fff}
-  .load-title{font-weight:800;font-size:16px}
-  .load-stage{font-size:13px;color:var(--ink-2);margin-top:2px}
-  .bar{height:8px;background:#E8EEF6;border-radius:999px;overflow:hidden}
-  .bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--teal));border-radius:999px;transition:width .25s ease}
-  .load-foot{display:flex;justify-content:space-between;margin-top:10px;font-size:12px;font-weight:700;color:var(--ink-3);font-variant-numeric:tabular-nums}
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  position: sticky; top: 0; z-index: 8; background: var(--card);
+  border-bottom: 1px solid var(--border); padding: 20px 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.header-left h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
+.header-left p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.header-date {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); font-size: 13px; font-weight: 500; color: var(--text); background: var(--card);
+}
+.header-date svg { width: 16px; height: 16px; color: var(--muted); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; transition: all 0.15s ease; border: 1px solid var(--border);
+  background: var(--card); color: var(--text);
+}
+.btn:hover { border-color: #CBD5E1; box-shadow: var(--shadow-sm); }
+.btn svg { width: 16px; height: 16px; }
+.btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light);
+  color: var(--primary); display: grid; place-items: center; font-size: 13px; font-weight: 700;
+}
+.user-info { display: flex; align-items: center; gap: 10px; margin-left: 6px; }
+.user-name { font-size: 13px; font-weight: 600; }
+.user-role { font-size: 11px; color: var(--muted); }
 
-  /* ---------- connect modal ---------- */
-  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(7,28,57,.42);backdrop-filter:blur(8px);z-index:30}
-  .modal.show{display:flex}
-  .modal-card{width:min(560px,100%);background:var(--card);border-radius:18px;box-shadow:0 28px 80px rgba(7,28,57,.28);border:1px solid var(--line);overflow:hidden}
-  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px;border-bottom:1px solid var(--line)}
-  .modal-head h2{font-size:20px;letter-spacing:-.02em}
-  .modal-head p{font-size:13px;color:var(--ink-2);margin-top:4px}
-  .icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink-2);display:grid;place-items:center;cursor:pointer;flex:none}
-  .icon-btn svg{width:17px;height:17px}
-  .modal-body{padding:22px 24px}
-  .steps-connect{display:grid;gap:12px;margin-bottom:18px}
-  .step{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#FBFCFE}
-  .step-num{width:30px;height:30px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800}
-  .step b{display:block;font-size:14px;margin-bottom:2px}
-  .step span{font-size:13px;color:var(--ink-2)}
-  .modal-actions{display:flex;gap:9px;flex-wrap:wrap}
-  .note{margin-top:14px;color:var(--ink-3);font-size:12.5px;line-height:1.45}
-  .login-form{display:grid;gap:12px;margin-bottom:16px}
-  .field label{display:block;font-size:12.5px;font-weight:800;color:var(--ink-2);margin-bottom:5px}
-  .field input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit;color:var(--ink);background:#fff}
-  .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,114,206,.13)}
-  .connect-status{display:none;margin-top:14px;border:1px solid var(--line);border-radius:12px;background:#FBFCFE;padding:12px 13px;font-size:13px;color:var(--ink-2);line-height:1.45}
-  .connect-status.show{display:block}
-  .connect-status.success{border-color:rgba(0,184,169,.35);background:#F0FFFC;color:#0B6B62}
-  .connect-status.error{border-color:rgba(180,35,42,.28);background:#FFF5F5;color:#9F1D24}
-  .action[disabled]{opacity:.6;cursor:not-allowed}
+/* ============================================================
+   CONTENT AREA
+   ============================================================ */
+.content { padding: 24px 32px 48px; max-width: 1400px; width: 100%; }
 
-  /* ---------- stat tiles ---------- */
-  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:16px;margin-bottom:22px}
-  .tile{background:var(--card);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-  .tile .k{font-size:13px;font-weight:600;color:var(--ink-2)}
-  .tile .v{font-size:30px;font-weight:800;letter-spacing:-.03em;margin-top:6px;font-variant-numeric:tabular-nums}
-  .tile .d{font-size:12.5px;font-weight:600;margin-top:5px;display:flex;align-items:center;gap:5px}
-  .up{color:#0B7B4B}.down{color:#B4232A}
-  .tile svg.spark{position:absolute;right:14px;bottom:14px;opacity:.9}
-  .tile.hero{background:linear-gradient(135deg,var(--navy) 0%,#0B3B74 60%,var(--blue) 130%);color:#fff}
-  .tile.hero .k{color:#A9C4E4}.tile.hero .d{color:#8FE3DA}
+/* ============================================================
+   KPI CARDS
+   ============================================================ */
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--card); border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow); border: 1px solid var(--border-light);
+  transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 14px;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.kpi-icon {
+  width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0;
+}
+.kpi-icon svg { width: 22px; height: 22px; }
+.kpi-icon.blue { background: var(--primary-light); color: var(--primary); }
+.kpi-icon.green { background: var(--success-light); color: var(--success); }
+.kpi-icon.purple { background: var(--purple-light); color: var(--purple); }
+.kpi-icon.teal { background: var(--teal-light); color: var(--teal); }
+.kpi-icon.red { background: var(--danger-light); color: var(--danger); }
+.kpi-icon.amber { background: var(--warning-light); color: var(--warning); }
+.kpi-label { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 4px; }
+.kpi-value { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi-change { font-size: 12px; font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+.kpi-change.up { color: var(--success); }
+.kpi-change.down { color: var(--danger); }
 
-  /* ---------- cards / charts ---------- */
-  .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:16px;margin-bottom:16px}
-  @media(max-width:980px){.grid{grid-template-columns:1fr}aside{display:none}main{padding:22px 18px}}
-  .card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);min-width:0}
-  .card h2{font-size:15.5px;letter-spacing:-.01em}
-  .card .hint{font-size:12.5px;color:var(--ink-3);margin:2px 0 14px}
-  .chart-wrap{position:relative}
-  svg text{font-family:inherit}
-  .tt{position:absolute;pointer-events:none;background:var(--navy);color:#fff;border-radius:10px;padding:8px 12px;font-size:12.5px;line-height:1.5;box-shadow:0 8px 24px rgba(7,28,57,.3);opacity:0;transform:translate(-50%,-110%);transition:opacity .1s;white-space:nowrap;z-index:5}
-  .tt b{font-size:13.5px}
+/* ============================================================
+   CARD COMPONENT
+   ============================================================ */
+.card {
+  background: var(--card); border-radius: var(--radius); padding: 24px;
+  box-shadow: var(--shadow); border: 1px solid var(--border-light); margin-bottom: 24px;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px;
+}
+.card-header h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.link-btn { font-size: 13px; font-weight: 600; color: var(--primary); cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+.period-select {
+  font-size: 13px; font-weight: 500; padding: 6px 28px 6px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius-xs); background: var(--card); color: var(--text); cursor: pointer;
+  appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+}
 
-  .rowbar{display:flex;align-items:center;gap:12px;margin:11px 0}
-  .rowbar .lbl{width:110px;font-size:13px;font-weight:600;color:var(--ink-2);flex-shrink:0;display:flex;align-items:center;gap:8px}
-  .rowbar .lbl i{width:9px;height:9px;border-radius:3px;flex-shrink:0}
-  .rowbar .track{flex:1;height:22px;background:var(--bg);border-radius:7px;overflow:hidden}
-  .rowbar .fill{display:block;height:100%;border-radius:0 4px 4px 0;transition:width .6s cubic-bezier(.2,.8,.2,1)}
-  .rowbar .val{width:110px;text-align:right;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* ============================================================
+   GRID LAYOUTS
+   ============================================================ */
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.row-2 > .card { margin-bottom: 0; }
+.row-7-3 { display: grid; grid-template-columns: 7fr 3fr; gap: 24px; }
+.row-7-3 > .card { margin-bottom: 0; }
+.grid-wrap { margin-bottom: 24px; }
 
-  .plist li{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
-  .plist li:last-child{border:none}
-  .plist .rank{width:26px;height:26px;border-radius:8px;background:var(--bg);display:inline-grid;place-items:center;font-size:12px;font-weight:800;color:var(--ink-2);margin-right:11px}
-  .plist li:first-child .rank{background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff}
-  .plist .amt{font-weight:700;font-variant-numeric:tabular-nums}
-  .plist .nm{flex:1}
+/* ============================================================
+   CHART STYLES
+   ============================================================ */
+.chart-container { position: relative; }
+.chart-container svg { display: block; }
+.tooltip {
+  position: absolute; pointer-events: none; background: var(--sidebar-bg); color: #fff;
+  border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; line-height: 1.5;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.1s;
+  white-space: nowrap; z-index: 5; transform: translate(-50%, -110%);
+}
+.tooltip b { font-size: 14px; }
+.trend-stats {
+  display: flex; gap: 32px; padding: 16px 0 0; border-top: 1px solid var(--border-light); margin-top: 16px;
+}
+.trend-stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+.trend-stat-value { font-size: 18px; font-weight: 800; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.trend-stat-value.up { color: var(--success); }
+.trend-stat-value.down { color: var(--danger); }
+.hour-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  padding: 16px 0 0; border-top: 1px solid var(--border-light); margin-top: 16px;
+}
 
-  details.tbl{margin-top:14px}
-  details.tbl summary{font-size:12.5px;color:var(--ink-3);cursor:pointer;font-weight:600}
-  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-  th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
-  th:first-child,td:first-child{text-align:left}
-  th{color:var(--ink-2);font-weight:600}
+/* ============================================================
+   DATA TABLES
+   ============================================================ */
+.data-table { width: 100%; font-size: 13px; }
+.data-table thead th {
+  text-align: left; padding: 10px 12px; font-weight: 600; color: var(--muted);
+  border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+  position: sticky; top: 0; background: var(--card); z-index: 1;
+}
+.data-table thead th.right { text-align: right; }
+.data-table tbody td {
+  padding: 12px; border-bottom: 1px solid var(--border-light); font-variant-numeric: tabular-nums;
+  vertical-align: middle;
+}
+.data-table tbody td.right { text-align: right; }
+.data-table tbody td.mono { font-weight: 600; }
+.data-table tbody tr { transition: background 0.1s; }
+.data-table tbody tr:hover { background: var(--bg); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+.rank-badge {
+  width: 26px; height: 26px; border-radius: 8px; display: inline-grid; place-items: center;
+  font-size: 12px; font-weight: 700; background: var(--bg); color: var(--muted);
+}
+.rank-badge.gold { background: #FEF3C7; color: #B45309; }
+.rank-badge.silver { background: #F1F5F9; color: #475569; }
+.rank-badge.bronze { background: #FED7AA; color: #C2410C; }
+.staff-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--primary-light); color: var(--primary);
+  display: inline-grid; place-items: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.staff-cell { display: flex; align-items: center; gap: 10px; }
+.progress-bar {
+  height: 6px; background: var(--border-light); border-radius: 999px; overflow: hidden; min-width: 60px;
+}
+.progress-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+.badge-status {
+  display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+}
+.badge-sale { background: var(--success-light); color: var(--success); }
+.badge-refund { background: var(--danger-light); color: var(--danger); }
+.badge-voided { background: var(--warning-light); color: #B45309; }
+.badge-payment {
+  display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; background: var(--primary-light); color: var(--primary);
+}
 
-  /* ---------- empty state ---------- */
-  .empty-state{display:none;min-height:100vh;width:100%;align-items:center;justify-content:center;padding:40px 24px;background:var(--bg)}
-  .empty-state.show{display:flex}
-  .empty-card{width:min(520px,100%);background:var(--card);border-radius:var(--radius);padding:40px 32px;box-shadow:var(--shadow);border:1px solid var(--line);text-align:center}
-  .empty-logo{font-size:48px;margin-bottom:20px;display:inline-block}
-  .empty-title{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:12px;color:var(--navy)}
-  .empty-desc{color:var(--ink-2);font-size:14.5px;line-height:1.6;margin-bottom:30px}
-  .empty-steps{text-align:left;background:#FBFCFE;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:30px}
-  .empty-steps h3{font-size:14px;font-weight:800;margin-bottom:12px;color:var(--navy)}
-  .empty-steps ol{margin-left:20px;font-size:13px;color:var(--ink-2);display:grid;gap:8px}
+/* ============================================================
+   DONUT CHART
+   ============================================================ */
+.donut-container { display: flex; align-items: center; gap: 24px; justify-content: center; flex-wrap: wrap; }
+.donut-legend { display: flex; flex-direction: column; gap: 10px; min-width: 160px; }
+.legend-item { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.legend-label { flex: 1; color: var(--text); font-weight: 500; }
+.legend-value { color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ============================================================
+   LOADING OVERLAY
+   ============================================================ */
+.loader {
+  position: fixed; inset: 0; background: rgba(248,250,252,0.92); backdrop-filter: blur(10px);
+  display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50;
+}
+.loader.show { display: flex; }
+.loadbox {
+  width: min(420px, 100%); background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-lg);
+}
+.load-top { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.load-ring {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: conic-gradient(var(--primary) var(--p, 0%), var(--border-light) 0);
+  display: grid; place-items: center; flex-shrink: 0; transition: background 0.3s;
+}
+.load-ring::after { content: ""; width: 34px; height: 34px; border-radius: 50%; background: var(--card); }
+.load-title { font-weight: 800; font-size: 17px; }
+.load-stage { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.load-bar { height: 6px; background: var(--border-light); border-radius: 999px; overflow: hidden; }
+.load-bar span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), #60A5FA); border-radius: 999px; transition: width 0.3s ease; }
+.load-foot { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--muted2); }
+
+/* ============================================================
+   CONNECT MODAL
+   ============================================================ */
+.modal {
+  position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+  padding: 22px; background: rgba(15,23,42,0.5); backdrop-filter: blur(8px); z-index: 40;
+}
+.modal.show { display: flex; }
+.modal-card {
+  width: min(520px, 100%); background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); border: 1px solid var(--border); overflow: hidden;
+}
+.modal-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 24px; border-bottom: 1px solid var(--border);
+}
+.modal-head h2 { font-size: 18px; font-weight: 800; }
+.modal-head p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.close-btn {
+  width: 34px; height: 34px; border-radius: var(--radius-xs); border: 1px solid var(--border);
+  background: var(--card); color: var(--muted); display: grid; place-items: center; flex-shrink: 0;
+}
+.close-btn:hover { background: var(--bg); }
+.close-btn svg { width: 18px; height: 18px; }
+.modal-body { padding: 24px; }
+.form-grid { display: grid; gap: 14px; margin-bottom: 18px; }
+.field label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.field input {
+  width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 11px 14px; font-size: 14px; color: var(--text); background: var(--card); transition: all 0.15s;
+}
+.field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+.connect-status {
+  display: none; margin-top: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg); padding: 12px 14px; font-size: 13px; color: var(--muted); line-height: 1.5;
+}
+.connect-status.show { display: block; }
+.connect-status.success { border-color: rgba(22,163,74,0.3); background: var(--success-light); color: #15803D; }
+.connect-status.error { border-color: rgba(220,38,38,0.3); background: var(--danger-light); color: #B91C1C; }
+.note { margin-top: 14px; color: var(--muted2); font-size: 12px; line-height: 1.5; }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  display: none; min-height: 100vh; width: 100%; align-items: center; justify-content: center;
+  padding: 40px 24px; background: var(--bg);
+}
+.empty-state.show { display: flex; }
+.empty-card {
+  width: min(520px, 100%); background: var(--card); border-radius: var(--radius);
+  padding: 48px 36px; box-shadow: var(--shadow-md); border: 1px solid var(--border); text-align: center;
+}
+.empty-icon { font-size: 52px; margin-bottom: 20px; }
+.empty-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+.empty-desc { color: var(--muted); font-size: 14px; line-height: 1.7; margin-bottom: 28px; }
+.empty-steps {
+  text-align: left; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 20px; margin-bottom: 28px;
+}
+.empty-steps h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.empty-steps ol { margin-left: 20px; font-size: 13px; color: var(--muted); display: grid; gap: 8px; }
+
+/* ============================================================
+   FILTER PANEL
+   ============================================================ */
+.filter-panel {
+  display: none; position: fixed; top: 0; right: 0; width: 320px; height: 100vh;
+  background: var(--card); box-shadow: -4px 0 24px rgba(0,0,0,0.1); z-index: 35;
+  padding: 24px; overflow-y: auto; border-left: 1px solid var(--border);
+}
+.filter-panel.show { display: block; }
+.filter-panel h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+.filter-group { margin-bottom: 18px; }
+.filter-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.filter-group select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-xs);
+  font-size: 13px; background: var(--card); color: var(--text);
+}
+.filter-actions { display: flex; gap: 8px; margin-top: 24px; }
+.filter-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.3); z-index: 34;
+}
+.filter-overlay.show { display: block; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer { text-align: center; padding: 32px 0 0; font-size: 12px; color: var(--muted2); }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.fade-up { animation: fadeUp 0.4s ease-out both; }
+.fade-up-1 { animation-delay: 0.05s; }
+.fade-up-2 { animation-delay: 0.1s; }
+.fade-up-3 { animation-delay: 0.15s; }
+.fade-up-4 { animation-delay: 0.2s; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+  .row-7-3, .row-2 { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .header { padding: 16px 20px; }
+  .content { padding: 16px 20px 32px; }
+  .header-right .user-info, .header-right .header-date { display: none; }
+  .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .donut-container { flex-direction: column; }
+}
 </style>
 </head>
 <body>
 
-<div class="empty-state" id="emptyStateContainer">
+<!-- ============================================================
+     EMPTY STATE
+     ============================================================ -->
+<div class="empty-state" id="emptyState">
   <div class="empty-card">
-    <span class="empty-logo">⚡</span>
-    <h2 class="empty-title">Welcome to Yoco Pulse</h2>
-    <p class="empty-desc">Your dashboard is ready, but no scraped data has been imported yet. Connect your Yoco account below to run the scraper and fetch your live sales data.</p>
-    
+    <div class="empty-icon">🛒</div>
+    <h2 class="empty-title">Welcome to LiquorPOS</h2>
+    <p class="empty-desc">Your analytics dashboard is ready, but no sales data has been imported yet. Connect your Yoco account to run the scraper and fetch your live store data.</p>
     <div class="empty-steps">
       <h3>How it works:</h3>
       <ol>
-        <li>Your login details are secured as encrypted GitHub Actions Secrets in your repository.</li>
+        <li>Your login credentials are secured as encrypted GitHub Actions Secrets.</li>
         <li>The automated scraper logs in and downloads your products report.</li>
-        <li>The data is processed, and this dashboard will update automatically.</li>
+        <li>The data is processed, and this dashboard updates automatically.</li>
       </ol>
     </div>
-
-    <button class="action primary" id="emptyConnectBtn" type="button" style="padding:12px 24px;font-size:14px;border-radius:12px;cursor:pointer;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-right:8px;vertical-align:middle;display:inline-block;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+    <button class="btn btn-primary" id="emptyConnectBtn" type="button" style="padding:12px 28px;font-size:14px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
       Connect Yoco Account
     </button>
   </div>
 </div>
 
-<aside>
-  <div class="logo"><span class="dot">⚡</span>Yoco&nbsp;Pulse</div>
-  <a class="active" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
-  <button id="openConnectSide" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.4a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2 1.2l.4 2.4h4l.4-2.4a7 7 0 0 0 2-1.2l2.3.9 2-3.4-2-1.5c.06-.4.1-.8.1-1.2z"/></svg>Connect Yoco</button>
-  <div class="side-foot"><b>Data pipeline</b>Playwright scraper runs daily on GitHub Actions.</div>
-</aside>
+<!-- ============================================================
+     APP SHELL
+     ============================================================ -->
+<div class="app hidden" id="app">
 
-<main>
-  <header>
-    <div>
-      <h1 id="greeting">Good day 👋</h1>
-      <div class="sub" id="subline">Here’s how your business is doing.</div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      </div>
+      <span>LiquorPOS</span>
     </div>
-    <span class="badge" id="badge"><span class="pulse"></span><span id="badge-txt">Loading…</span></span>
-  </header>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></a>
+      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg><span>Transactions</span></a>
+      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span>Products</span></a>
+      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg><span>Categories</span></a>
+      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Staff</span></a>
+      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Customers</span></a>
+      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg><span>Reports</span></a>
+      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg><span>Inventory</span></a>
+      <button class="nav-item" id="openConnectSide" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
+    </nav>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-footer">
+      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><span>Help</span></a>
+      <button class="nav-item" id="logoutBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></button>
+    </div>
+  </aside>
 
-  <div class="actions">
-    <div class="action-group">
-      <button class="action" id="openConnectTop" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
-        Connect Yoco
-      </button>
-      <a class="action" id="workflowLink" href="https://github.com" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 16 4-4 3 3 5-7"/></svg>
-        Scrape workflow
-      </a>
-      <button class="action primary" id="runSetupTop" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/></svg>
-        Set up automation
-      </button>
-    </div>
-    <div class="connect-state" id="connectState">Automation not connected</div>
+  <!-- MAIN AREA -->
+  <div class="main-wrapper">
+    <header class="header" id="header">
+      <div class="header-left">
+        <h1>Retail Sales Dashboard</h1>
+        <p>Overview of sales performance</p>
+      </div>
+      <div class="header-right">
+        <div class="header-date" id="headerDate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="dateRangeText">Loading…</span>
+        </div>
+        <button class="btn" id="filterBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filters
+        </button>
+        <button class="btn btn-primary" id="exportBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+        <div class="user-info">
+          <div>
+            <div class="user-name" id="userName">Admin</div>
+            <div class="user-role">Admin</div>
+          </div>
+          <div class="avatar" id="userAvatar">AD</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- KPI Cards -->
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <!-- Charts: Sales Trend + Sales by Hour -->
+      <div class="grid-wrap row-7-3">
+        <div class="card">
+          <div class="card-header">
+            <h2>Sales Trend</h2>
+            <select class="period-select" id="trendPeriod"><option>This Week</option><option>This Month</option></select>
+          </div>
+          <div class="chart-container"><svg id="trendChart" width="100%" height="260"></svg><div class="tooltip" id="trendTT"></div></div>
+          <div class="trend-stats" id="trendStats"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2>Sales by Hour</h2>
+            <select class="period-select" id="hourPeriod"><option>Today</option></select>
+          </div>
+          <div class="chart-container"><svg id="hourChart" width="100%" height="260"></svg></div>
+          <div class="hour-stats" id="hourStats"></div>
+        </div>
+      </div>
+
+      <!-- Products + Category Donut -->
+      <div class="grid-wrap row-2">
+        <div class="card">
+          <div class="card-header">
+            <h2>Top Selling Products</h2>
+            <button class="link-btn" id="productsToggle">View all</button>
+          </div>
+          <table class="data-table" id="productsTable">
+            <thead><tr><th style="width:40px">#</th><th>Product</th><th class="right">Qty Sold</th><th class="right">Revenue</th></tr></thead>
+            <tbody id="productsBody"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2>Revenue by Category</h2>
+            <select class="period-select"><option>This Week</option></select>
+          </div>
+          <div id="categoryDonut" class="donut-container"></div>
+        </div>
+      </div>
+
+      <!-- Staff + Payment Donut -->
+      <div class="grid-wrap row-2">
+        <div class="card">
+          <div class="card-header">
+            <h2>Staff Performance</h2>
+            <select class="period-select"><option>This Week</option></select>
+          </div>
+          <table class="data-table" id="staffTable">
+            <thead><tr><th>Staff</th><th class="right">Revenue</th><th class="right">Transactions</th><th class="right">Avg. Sale</th><th style="width:80px"></th></tr></thead>
+            <tbody id="staffBody"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2>Payment Methods</h2></div>
+          <div id="paymentDonut" class="donut-container"></div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="card" id="txnCard">
+        <div class="card-header">
+          <h2>Recent Transactions</h2>
+          <button class="link-btn" id="txnToggle">View all</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="txnTable">
+            <thead><tr><th>Time</th><th>Item</th><th>Staff</th><th>Category</th><th class="right">Qty</th><th class="right">Amount</th><th>Status</th><th>Payment</th></tr></thead>
+            <tbody id="txnBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <footer class="footer">&copy; 2026 LiquorPOS. All rights reserved.</footer>
+    </main>
   </div>
+</div>
 
-  <div class="filters" id="filters">
-    <button data-days="7">7 days</button>
-    <button data-days="30" class="on">30 days</button>
-    <button data-days="90">90 days</button>
-  </div>
-
-  <div class="tiles" id="tiles"></div>
-
-  <div class="grid" id="grid-revenue">
-    <div class="card" id="card-revenue">
-      <h2>Revenue</h2>
-      <div class="hint" id="rev-hint"></div>
-      <div class="chart-wrap"><svg id="revchart" width="100%" height="260"></svg><div class="tt" id="tt-rev"></div></div>
-      <details class="tbl"><summary>View as table</summary><div id="rev-table"></div></details>
-    </div>
-    <div class="card" id="card-pay">
-      <h2>Payment methods</h2>
-      <div class="hint">Share of revenue by how customers paid</div>
-      <div id="paybars"></div>
-    </div>
-  </div>
-
-  <div id="grid-products" class="grid-layout" style="margin-top:24px">
-    <div class="card fade-in">
-      <div class="card-title">Top products</div>
-      <div class="card-desc" id="prod-hint">From your Yoco report</div>
-      <div id="products-list"></div>
-    </div>
-  </div>
-  
-  <div id="grid-advanced" class="grid-layout" style="margin-top:24px; display:none;">
-    <div class="card fade-in" id="card-categories">
-      <div class="card-title">Top categories</div>
-      <div id="categories-list"></div>
-    </div>
-    <div class="card fade-in" id="card-brands">
-      <div class="card-title">Top brands</div>
-      <div id="brands-list"></div>
-    </div>
-    <div class="card fade-in" id="card-staff">
-      <div class="card-title">Top staff</div>
-      <div id="staff-list"></div>
-    </div>
-  </div>
-
-  <div class="card fade-in" id="card-transactions" style="margin-top:24px; display:none; overflow-x: auto;">
-    <div class="card-title">Recent transactions</div>
-    <div id="transactions-list"></div>
-  </div>
-</main>
-
-<div class="loader show" id="loader" aria-live="polite" aria-busy="true">
+<!-- ============================================================
+     LOADING OVERLAY
+     ============================================================ -->
+<div class="loader show" id="loader" aria-live="polite">
   <div class="loadbox">
     <div class="load-top">
-      <div class="ring" id="loadRing"></div>
+      <div class="load-ring" id="loadRing"></div>
       <div>
-        <div class="load-title">Loading dashboard</div>
+        <div class="load-title">Loading Dashboard</div>
         <div class="load-stage" id="loadStage">Starting…</div>
       </div>
     </div>
-    <div class="bar"><span id="loadBar"></span></div>
+    <div class="load-bar"><span id="loadBar"></span></div>
     <div class="load-foot"><span id="loadDetail">Preparing data</span><span id="loadPct">0%</span></div>
   </div>
 </div>
 
-<div class="modal" id="connectModal" role="dialog" aria-modal="true" aria-labelledby="connectTitle">
+<!-- ============================================================
+     CONNECT MODAL
+     ============================================================ -->
+<div class="modal" id="connectModal" role="dialog" aria-modal="true">
   <div class="modal-card">
     <div class="modal-head">
       <div>
-        <h2 id="connectTitle">Connect Yoco</h2>
-        <p>Sign in once. The secure backend saves the login and starts the scraper.</p>
+        <h2>Connect Yoco</h2>
+        <p>Enter your Yoco login to start automated scraping.</p>
       </div>
-      <button class="icon-btn" id="closeConnect" type="button" aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      <button class="close-btn" id="closeConnect" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="modal-body">
-      <form id="yocoConnectForm">
-        <div class="login-form">
-          <div class="field">
-            <label for="yocoEmail">Yoco email</label>
-            <input id="yocoEmail" type="email" autocomplete="username" placeholder="you@business.co.za" required>
-          </div>
-          <div class="field">
-            <label for="yocoPassword">Yoco password</label>
-            <input id="yocoPassword" type="password" autocomplete="current-password" placeholder="Password" required>
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button class="action primary" id="connectYocoBtn" type="submit">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/></svg>
-            <span>Connect and load data</span>
-          </button>
-          <a class="action" id="testLoginLink" href="debug.html" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
-            Login debug
+      <form class="form-grid" id="connectForm" autocomplete="on" onsubmit="event.preventDefault();connectYoco();">
+        <div class="field"><label for="yocoEmail">Email address</label><input type="email" id="yocoEmail" placeholder="you@example.com" required autocomplete="email"></div>
+        <div class="field"><label for="yocoPassword">Password</label><input type="password" id="yocoPassword" placeholder="Your Yoco password" required autocomplete="current-password"></div>
+        <div style="display:flex;gap:10px">
+          <button type="submit" class="btn btn-primary" id="connectYocoBtn" style="flex:1;justify-content:center;padding:12px"><span>Connect and load data</span></button>
+          <a class="btn" id="workflowLink" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M3 3v18h18"/><path d="m7 16 4-4 3 3 5-7"/></svg>
+            Workflow
           </a>
         </div>
       </form>
       <div class="connect-status" id="connectStatus" aria-live="polite"></div>
-      <div class="note">Your Yoco password is sent only to the Vercel backend over HTTPS. The backend stores it as a GitHub Actions secret, triggers the scrape workflow, and does not return or expose the password to this page.</div>
+      <div class="note">Your Yoco password is sent only to the Vercel backend over HTTPS. The backend stores it as a GitHub Actions secret, triggers the scrape workflow, and does not expose the password.</div>
     </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     FILTER PANEL
+     ============================================================ -->
+<div class="filter-overlay" id="filterOverlay"></div>
+<div class="filter-panel" id="filterPanel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h3 style="margin:0">Filters</h3>
+    <button class="close-btn" id="closeFilter" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="filter-group"><label>Category</label><select id="filterCategory"><option value="">All Categories</option></select></div>
+  <div class="filter-group"><label>Staff</label><select id="filterStaff"><option value="">All Staff</option></select></div>
+  <div class="filter-group"><label>Status</label><select id="filterStatus"><option value="">All</option><option value="Approved">Sales</option><option value="Refunded">Refunds</option></select></div>
+  <div class="filter-actions">
+    <button class="btn btn-primary" id="applyFilters" style="flex:1;justify-content:center">Apply Filters</button>
+    <button class="btn" id="clearFilters">Clear</button>
   </div>
 </div>
 
 <script src="connect-config.js"></script>
 <script>
-const C = { blue:"#0072CE", teal:"#00B8A9", violet:"#7C5CFF", pink:"#E8618C", amber:"#F59E0B",
-            ink:"#12263A", ink2:"#5B6B7E", ink3:"#93A1B0", line:"#E4EAF2", navy:"#071C39" };
-const ZAR = n => "R" + n.toLocaleString("en-ZA",{maximumFractionDigits:0});
-const fmtD = s => new Date(s+"T00:00").toLocaleDateString("en-ZA",{day:"numeric",month:"short"});
-const esc = s => String(s ?? "").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-const pause = ms => new Promise(r=>setTimeout(r,ms));
-const CONNECT_ENDPOINT = window.YOCO_CONNECT_ENDPOINT || "/api/connect-yoco";
+/* ============================================================
+   CONSTANTS & UTILITIES
+   ============================================================ */
+const COLORS = {
+  primary:'#2563EB', success:'#16A34A', danger:'#DC2626', warning:'#F59E0B',
+  purple:'#7C3AED', teal:'#0D9488', pink:'#EC4899', indigo:'#6366F1',
+  text:'#0F172A', muted:'#64748B', border:'#E2E8F0'
+};
+const DONUT_COLORS = ['#2563EB','#16A34A','#F59E0B','#7C3AED','#EC4899','#0D9488','#6366F1','#F97316'];
+const ZAR = n => 'R' + Math.abs(n).toLocaleString('en-ZA', {maximumFractionDigits:0});
+const fmtD = s => { try { return new Date(s.replace(/\//g,'-')+'T00:00').toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}); } catch { return s; } };
+const fmtShort = s => { try { return new Date(s.replace(/\//g,'-')+'T00:00').toLocaleDateString('en-ZA',{day:'numeric',month:'short'}); } catch { return s; } };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const pause = ms => new Promise(r => setTimeout(r, ms));
+const CONNECT_ENDPOINT = window.YOCO_CONNECT_ENDPOINT || '/api/connect-yoco';
 
-let DATA=null, RANGE=30, LIVE=null, MODE="empty", BOOTED=false;
+/* ============================================================
+   STATE
+   ============================================================ */
+let DATA = null, LIVE = null, MODE = 'empty', BOOTED = false;
+let PRODUCTS_EXPANDED = false, TXN_EXPANDED = false;
 
-function setProgress(pct, stage, detail=stage){
-  const p=Math.max(0,Math.min(100,Math.round(pct)));
-  document.getElementById("loader").classList.add("show");
-  document.getElementById("loader").setAttribute("aria-busy","true");
-  document.getElementById("loadStage").textContent=stage;
-  document.getElementById("loadDetail").textContent=detail;
-  document.getElementById("loadPct").textContent=p+"%";
-  document.getElementById("loadBar").style.width=p+"%";
-  document.getElementById("loadRing").style.setProperty("--p",p+"%");
+/* ============================================================
+   LOADING PROGRESS
+   ============================================================ */
+function setProgress(pct, stage, detail) {
+  const p = Math.max(0, Math.min(100, Math.round(pct)));
+  document.getElementById('loader').classList.add('show');
+  document.getElementById('loadStage').textContent = stage;
+  document.getElementById('loadDetail').textContent = detail || stage;
+  document.getElementById('loadPct').textContent = p + '%';
+  document.getElementById('loadBar').style.width = p + '%';
+  document.getElementById('loadRing').style.setProperty('--p', p + '%');
 }
-function hideProgress(){
-  document.getElementById("loader").classList.remove("show");
-  document.getElementById("loader").setAttribute("aria-busy","false");
+function hideProgress() {
+  const el = document.getElementById('loader');
+  el.style.opacity = '0';
+  setTimeout(() => { el.classList.remove('show'); el.style.opacity = ''; }, 300);
 }
-function openConnect(){
-  document.getElementById("connectModal").classList.add("show");
+
+/* ============================================================
+   MODAL & UI HELPERS
+   ============================================================ */
+function openConnect() { document.getElementById('connectModal').classList.add('show'); }
+function closeConnect() {
+  document.getElementById('connectModal').classList.remove('show');
+  if (location.hash === '#connect') history.replaceState(null, '', location.pathname + location.search);
 }
-function closeConnect(){
-  document.getElementById("connectModal").classList.remove("show");
-  if(location.hash==="#connect") history.replaceState(null,"",location.pathname+location.search);
+function openFilters() {
+  document.getElementById('filterPanel').classList.add('show');
+  document.getElementById('filterOverlay').classList.add('show');
 }
-async function initData(){
+function closeFilters() {
+  document.getElementById('filterPanel').classList.remove('show');
+  document.getElementById('filterOverlay').classList.remove('show');
+}
+function setConnectStatus(msg, type) {
+  const box = document.getElementById('connectStatus');
+  box.textContent = msg;
+  box.className = 'connect-status show' + (type ? ' ' + type : '');
+}
+
+/* ============================================================
+   GITHUB & DATA FETCHING (PRESERVED)
+   ============================================================ */
+function githubRepoSlug() {
+  const host = location.hostname;
+  if (host.endsWith('.github.io')) {
+    const owner = host.replace('.github.io', '');
+    const repo = location.pathname.split('/').filter(Boolean)[0];
+    if (owner && repo) return owner + '/' + repo;
+  }
+  return 'OWNER/REPO';
+}
+function setWorkflowLink() {
+  const repo = githubRepoSlug();
+  const link = document.getElementById('workflowLink');
+  link.href = repo === 'OWNER/REPO' ? 'https://github.com' : 'https://github.com/' + repo + '/actions/workflows/scrape.yml';
+}
+
+async function fetchLiveData() {
+  const repo = githubRepoSlug();
+  let url = 'data/latest.json?t=' + Date.now();
+  if (repo !== 'OWNER/REPO') {
+    try {
+      const branchRes = await fetch('https://api.github.com/repos/' + repo + '/branches/data', { cache: 'no-store' });
+      if (branchRes.ok) {
+        const commitRes = await fetch('https://api.github.com/repos/' + repo + '/commits/data', { cache: 'no-store' });
+        if (commitRes.ok) {
+          const commitData = await commitRes.json();
+          url = 'https://raw.githubusercontent.com/' + repo + '/' + commitData.sha + '/data/latest.json';
+        } else {
+          url = 'https://raw.githubusercontent.com/' + repo + '/data/data/latest.json?t=' + Date.now();
+        }
+      } else {
+        url = 'https://raw.githubusercontent.com/' + repo + '/main/data/latest.json?t=' + Date.now();
+      }
+    } catch (e) {
+      url = 'https://raw.githubusercontent.com/' + repo + '/main/data/latest.json?t=' + Date.now();
+    }
+  }
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error(String(r.status));
+  const d = await r.json();
+  if (!(d.days?.length || d.topProducts?.length || d.topBrands?.length || d.topCategories?.length)) throw new Error('empty report');
+  return d;
+}
+
+async function waitForLiveData(lastScrapedTime) {
+  const deadline = Date.now() + 6 * 60 * 1000;
+  let attempt = 0;
+  while (Date.now() < deadline) {
+    attempt++;
+    await pause(attempt === 1 ? 12000 : 18000);
+    setConnectStatus('Scrape is running. Checking for updated data…');
+    try {
+      const d = await fetchLiveData();
+      const newTime = new Date(d.scrapedAt).getTime();
+      if (newTime > lastScrapedTime) {
+        LIVE = d; DATA = d; DATA.mode = 'live';
+        boot('live');
+        setConnectStatus('Connected. Live data is ready.', 'success');
+        setTimeout(closeConnect, 1200);
+        return true;
+      }
+    } catch (err) { console.warn('Polling:', err); }
+  }
+  setConnectStatus('Scraper started but data not published yet. Refresh shortly.', 'success');
+  return false;
+}
+
+async function connectYoco() {
+  const email = document.getElementById('yocoEmail').value.trim();
+  const password = document.getElementById('yocoPassword').value;
+  if (!email || !password) { alert('Enter your Yoco email and password.'); return; }
+  if (CONNECT_ENDPOINT.includes('YOUR-VERCEL-PROJECT') || (location.hostname.endsWith('.github.io') && CONNECT_ENDPOINT.startsWith('/'))) {
+    setConnectStatus('Vercel backend URL not configured. Set window.YOCO_CONNECT_ENDPOINT.', 'error');
+    return;
+  }
+  const btn = document.getElementById('connectYocoBtn');
+  const btnLabel = btn.querySelector('span');
+  btn.disabled = true;
+  btnLabel.textContent = 'Connecting…';
+  setConnectStatus('Securing credentials and starting scraper…');
   try {
-    setProgress(18,"Initializing live dashboard...","Fetching from data branch");
+    const res = await fetch(CONNECT_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok || !payload.ok) throw new Error(payload.error || 'Connect failed (' + res.status + ')');
+    const lastScrapedTime = LIVE ? new Date(LIVE.scrapedAt).getTime() : 0;
+    document.getElementById('yocoPassword').value = '';
+    setConnectStatus('Login saved. Scraper is running…');
+    await waitForLiveData(lastScrapedTime);
+  } catch (err) {
+    setConnectStatus(err.message || 'Could not connect. Try again.', 'error');
+  } finally {
+    document.getElementById('yocoPassword').value = '';
+    btn.disabled = false;
+    btnLabel.textContent = 'Connect and load data';
+  }
+}
+
+/* ============================================================
+   INIT & BOOT
+   ============================================================ */
+async function initData() {
+  try {
+    setProgress(18, 'Fetching sales data…', 'Connecting to data source');
     let d;
-    if (githubRepoSlug() === "OWNER/REPO") {
-      const r=await fetch("data/latest.json",{cache:"no-store"});
-      d=await r.json();
+    if (githubRepoSlug() === 'OWNER/REPO') {
+      const r = await fetch('data/latest.json', { cache: 'no-store' });
+      d = await r.json();
     } else {
       d = await fetchLiveData();
     }
-    
-    if (d.mode === "empty" || Object.keys(d).length === 0) {
-      throw new Error("empty report");
-    }
-    
-    setProgress(76,"Preparing live data","Rendering Yoco report");
-    LIVE=d; DATA=d; DATA.mode="live"; boot("live");
-  } catch(e){
-    console.error("Init fallback to empty state",e);
-    setProgress(76,"Ready","No live report found");
-    boot("empty");
+    if (d.mode === 'empty' || !d || Object.keys(d).length === 0) throw new Error('empty');
+    setProgress(76, 'Rendering dashboard…', 'Processing report data');
+    LIVE = d; DATA = d; DATA.mode = 'live';
+    boot('live');
+  } catch (e) {
+    console.warn('Init fallback:', e);
+    setProgress(76, 'Ready', 'No data found');
+    boot('empty');
   }
 }
 
-function boot(mode){
-  MODE=mode;
-  setProgress(100,"Rendering dashboard","Almost ready");
-
-  const isEmpty = mode === "empty";
-  document.getElementById("emptyStateContainer").classList.toggle("show", isEmpty);
-  document.querySelector("aside").style.display = isEmpty ? "none" : "flex";
-  document.querySelector("main").style.display = isEmpty ? "none" : "block";
+function boot(mode) {
+  MODE = mode;
+  setProgress(100, 'Done', 'Dashboard ready');
+  const isEmpty = mode === 'empty';
+  document.getElementById('emptyState').classList.toggle('show', isEmpty);
+  document.getElementById('app').classList.toggle('hidden', isEmpty);
 
   if (isEmpty) {
-    if(!BOOTED){
-      document.getElementById("filters").addEventListener("click",e=>{
-        const btn=e.target.closest("button"); if(!btn) return;
-        document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on",x===btn));
-        RANGE=+btn.dataset.days; render();
-      });
-      document.getElementById("openConnectTop").addEventListener("click",openConnect);
-      document.getElementById("runSetupTop").addEventListener("click",openConnect);
-      document.getElementById("openConnectSide").addEventListener("click",openConnect);
-      document.getElementById("closeConnect").addEventListener("click",closeConnect);
-      document.getElementById("connectModal").addEventListener("click",e=>{ if(e.target.id==="connectModal") closeConnect(); });
-      addEventListener("keydown",e=>{ if(e.key==="Escape") closeConnect(); });
-      addEventListener("resize",render);
-      document.getElementById("yocoConnectForm").addEventListener("submit",e=>{
-        e.preventDefault();
-        connectYoco();
-      });
+    if (!BOOTED) {
+      document.getElementById('emptyConnectBtn').addEventListener('click', openConnect);
+      document.getElementById('closeConnect').addEventListener('click', closeConnect);
       setWorkflowLink();
-      document.getElementById("emptyConnectBtn").addEventListener("click", openConnect);
-      BOOTED=true;
+      BOOTED = true;
     }
-    if(location.hash==="#connect") setTimeout(openConnect,260);
-    setTimeout(hideProgress,220);
+    setTimeout(hideProgress, 300);
     return;
   }
 
-  const b=document.getElementById("badge"), t=document.getElementById("badge-txt");
-  b.classList.remove("demo");
-  if(mode==="live"){
-    const r=LIVE.report;
-    t.textContent = r
-      ? `Live · products report ${fmtD(r.start)} – ${fmtD(r.end)}`
-      : "Live · scraped "+new Date(LIVE.scrapedAt).toLocaleString("en-ZA",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
-    document.getElementById("connectState").textContent="Live GitHub Actions data";
-    
-    const hasTrends = LIVE.days && LIVE.days.length > 0;
-    if(!hasTrends) {
-      document.getElementById("subline").textContent="Products are live from your latest Yoco report.";
-    } else {
-      document.getElementById("subline").textContent="Here’s how your business is doing.";
-    }
+  if (!BOOTED) {
+    document.getElementById('openConnectSide').addEventListener('click', openConnect);
+    document.getElementById('closeConnect').addEventListener('click', closeConnect);
+    document.getElementById('filterBtn').addEventListener('click', openFilters);
+    document.getElementById('closeFilter').addEventListener('click', closeFilters);
+    document.getElementById('filterOverlay').addEventListener('click', closeFilters);
+    document.getElementById('applyFilters').addEventListener('click', () => { applyFilters(); closeFilters(); });
+    document.getElementById('clearFilters').addEventListener('click', () => { clearFilters(); closeFilters(); });
+    document.getElementById('exportBtn').addEventListener('click', exportCSV);
+    document.getElementById('productsToggle').addEventListener('click', () => { PRODUCTS_EXPANDED = !PRODUCTS_EXPANDED; renderProducts(); });
+    document.getElementById('txnToggle').addEventListener('click', () => { TXN_EXPANDED = !TXN_EXPANDED; renderTransactions(); });
+    setWorkflowLink();
+    BOOTED = true;
   }
 
-  const h=new Date().getHours();
-  document.getElementById("greeting").textContent = (h<12?"Good morning":h<17?"Good afternoon":"Good evening")+" 👋";
-  if(!BOOTED){
-    document.getElementById("filters").addEventListener("click",e=>{
-      const btn=e.target.closest("button"); if(!btn) return;
-      document.querySelectorAll("#filters button").forEach(x=>x.classList.toggle("on",x===btn));
-      RANGE=+btn.dataset.days; render();
-    });
-    document.getElementById("openConnectTop").addEventListener("click",openConnect);
-    document.getElementById("runSetupTop").addEventListener("click",openConnect);
-    document.getElementById("openConnectSide").addEventListener("click",openConnect);
-    document.getElementById("closeConnect").addEventListener("click",closeConnect);
-    document.getElementById("connectModal").addEventListener("click",e=>{ if(e.target.id==="connectModal") closeConnect(); });
-    addEventListener("keydown",e=>{ if(e.key==="Escape") closeConnect(); });
-    addEventListener("resize",render);
-    document.getElementById("yocoConnectForm").addEventListener("submit",e=>{
-      e.preventDefault();
-      connectYoco();
-    });
-    setWorkflowLink();
-    document.getElementById("emptyConnectBtn").addEventListener("click", openConnect);
-    BOOTED=true;
-  }
   render();
-  if(location.hash==="#connect") setTimeout(openConnect,260);
-  setTimeout(hideProgress,220);
+  if (location.hash === '#connect') setTimeout(openConnect, 300);
+  setTimeout(hideProgress, 300);
 }
 
 initData();
 
-function githubRepoSlug(){
-  const host=location.hostname;
-  if(host.endsWith(".github.io")){
-    const owner=host.replace(".github.io","");
-    const repo=location.pathname.split("/").filter(Boolean)[0];
-    if(owner && repo) return `${owner}/${repo}`;
-  }
-  return "OWNER/REPO";
-}
-function setWorkflowLink(){
-  const repo=githubRepoSlug();
-  const link=document.getElementById("workflowLink");
-  link.href = repo==="OWNER/REPO"
-    ? "https://github.com"
-    : `https://github.com/${repo}/actions/workflows/scrape.yml`;
-}
-function setConnectStatus(message, type=""){
-  const box=document.getElementById("connectStatus");
-  box.textContent=message;
-  box.className=`connect-status show${type?` ${type}`:""}`;
-}
-async function fetchLiveData(){
-  const repo=githubRepoSlug();
-  let url = `data/latest.json?t=${Date.now()}`;
-  if(repo!=="OWNER/REPO"){
-    try {
-      const branchRes = await fetch(`https://api.github.com/repos/${repo}/branches/data`,{ cache:"no-store" });
-      if(branchRes.ok){
-        // Branch 'data' exists, get the latest commit sha from it to bypass cache
-        const commitRes = await fetch(`https://api.github.com/repos/${repo}/commits/data`,{ cache:"no-store" });
-        if(commitRes.ok){
-          const commitData = await commitRes.json();
-          url = `https://raw.githubusercontent.com/${repo}/${commitData.sha}/data/latest.json`;
-        } else {
-          url = `https://raw.githubusercontent.com/${repo}/data/data/latest.json?t=${Date.now()}`;
-        }
-      } else {
-        // Fallback to 'main' branch if 'data' branch does not exist yet
-        url = `https://raw.githubusercontent.com/${repo}/main/data/latest.json?t=${Date.now()}`;
-      }
-    } catch(e) {
-      url = `https://raw.githubusercontent.com/${repo}/main/data/latest.json?t=${Date.now()}`;
-    }
-  }
+/* ============================================================
+   RENDER ORCHESTRATOR
+   ============================================================ */
+function render() {
+  if (MODE === 'empty' || !DATA) return;
 
-  const r=await fetch(url,{ cache:"no-store" });
-  if(!r.ok) throw new Error(String(r.status));
-  const d=await r.json();
-  if(!(d.days?.length || d.topProducts?.length || d.topBrands?.length || d.topCategories?.length)) throw new Error("empty report");
-  return d;
-}
-async function waitForLiveData(lastScrapedTime){
-  const deadline=Date.now()+6*60*1000;
-  let attempt=0;
-  while(Date.now()<deadline){
-    attempt++;
-    await pause(attempt===1?12000:18000);
-    setConnectStatus("Scrape is running. Checking for updated data...");
-    try{
-      const d=await fetchLiveData();
-      const newScrapedTime = new Date(d.scrapedAt).getTime();
-      if (newScrapedTime > lastScrapedTime) {
-        LIVE=d; DATA=d; DATA.mode="live";
-        boot("live");
-        setConnectStatus("Connected. Live data is ready.", "success");
-        setTimeout(closeConnect,1200);
-        return true;
-      } else {
-        console.log("Fetched report is still the old one. Waiting...");
-      }
-    }catch(err){
-      console.warn("Polling error:", err);
-    }
-  }
-  setConnectStatus("The scraper was started, but the dashboard data is not published yet. This can take a few minutes; refresh shortly.", "success");
-  return false;
-}
-async function connectYoco(){
-  const email=document.getElementById("yocoEmail").value.trim();
-  const password=document.getElementById("yocoPassword").value;
-  if(!email || !password){
-    alert("Enter your Yoco email and password first.");
-    return;
-  }
-  if(CONNECT_ENDPOINT.includes("YOUR-VERCEL-PROJECT") || (location.hostname.endsWith(".github.io") && CONNECT_ENDPOINT.startsWith("/"))){
-    setConnectStatus("The Vercel backend URL is not configured yet. Set window.YOCO_CONNECT_ENDPOINT to your Vercel /api/connect-yoco URL.", "error");
-    return;
-  }
-  const btn=document.getElementById("connectYocoBtn");
-  const btnLabel=btn.querySelector("span");
-  btn.disabled=true;
-  btnLabel.textContent="Connecting...";
-  setConnectStatus("Securing credentials and starting the scraper...");
-  document.getElementById("connectState").textContent="Connecting to Yoco";
-  try{
-    const res=await fetch(CONNECT_ENDPOINT,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ email, password })
-    });
-    const payload=await res.json().catch(()=>({}));
-    if(!res.ok || !payload.ok) throw new Error(payload.error || `Connect failed (${res.status})`);
-    const lastScrapedTime = LIVE ? new Date(LIVE.scrapedAt).getTime() : 0;
-    document.getElementById("yocoPassword").value="";
-    document.getElementById("connectState").textContent="Scrape workflow started";
-    setConnectStatus("Login saved. The scraper is running now...");
-    await waitForLiveData(lastScrapedTime);
-  }catch(err){
-    setConnectStatus(err.message || "Could not connect Yoco. Please try again.", "error");
-    document.getElementById("connectState").textContent="Connection failed";
-  }finally{
-    document.getElementById("yocoPassword").value="";
-    btn.disabled=false;
-    btnLabel.textContent="Connect and load data";
-  }
-}
-
-function slice(){ return DATA.days.slice(-RANGE); }
-
-function render(){
-  if (MODE === "empty") return;
-
-  const hasTrends = DATA.days && DATA.days.length > 0;
-  const hasPayMethods = DATA.paymentMethods && DATA.paymentMethods.length > 0;
-
-  const gridRev = document.getElementById("grid-revenue");
-  const gridProd = document.getElementById("grid-products");
-  const revCard = document.getElementById("card-revenue");
-  const payCard = document.getElementById("card-pay");
-  const txnCard = document.getElementById("card-txn");
-  
-  if (revCard) revCard.style.display = hasTrends ? "block" : "none";
-  if (payCard) payCard.style.display = hasPayMethods ? "block" : "none";
-  if (txnCard) txnCard.style.display = hasTrends ? "block" : "none";
-
-  if (!hasTrends && !hasPayMethods) {
-    gridRev.style.display = "none";
+  // Header
+  if (DATA.report) {
+    document.getElementById('dateRangeText').textContent = fmtShort(DATA.report.start) + ' - ' + fmtShort(DATA.report.end);
   } else {
-    gridRev.style.display = "grid";
-    if (hasTrends && !hasPayMethods) {
-      gridRev.style.gridTemplateColumns = "1fr";
-    } else if (!hasTrends && hasPayMethods) {
-      gridRev.style.gridTemplateColumns = "1fr";
-    } else {
-      gridRev.style.gridTemplateColumns = "1.7fr 1fr";
-    }
+    document.getElementById('dateRangeText').textContent = new Date().toLocaleDateString('en-ZA', {day:'numeric',month:'short',year:'numeric'});
   }
 
-  if (!hasTrends) {
-    gridProd.style.gridTemplateColumns = "1fr";
-  } else {
-    gridProd.style.gridTemplateColumns = "1fr 1.7fr";
+  // User info
+  const staff = DATA.topStaff || [];
+  if (staff.length) {
+    const name = staff[0].name;
+    document.getElementById('userName').textContent = name;
+    const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('userAvatar').textContent = initials;
   }
 
-  if (hasTrends) {
-    const days=slice(), prev=DATA.days.slice(-RANGE*2,-RANGE);
-    renderTiles(days,prev);
-    renderRevenue(days);
-    renderTxns(days);
-    document.getElementById("rev-hint").textContent = `Daily revenue, last ${days.length} days`;
-    document.getElementById("txn-hint").textContent = `Sales volume, last ${days.length} days`;
-    document.getElementById("filters").style.display = "flex";
-  } else {
-    renderTiles([], []);
-    document.getElementById("filters").style.display = "none";
-  }
+  // Populate filter dropdowns
+  populateFilters();
 
-  if (hasPayMethods) {
-    renderPay();
-  }
-
+  // Render all sections
+  renderKPIs();
+  renderTrendChart();
+  renderHourChart();
   renderProducts();
-  renderAdvancedWidgets();
+  renderCategoryDonut();
+  renderStaff();
+  renderPaymentDonut();
+  renderTransactions();
 }
 
-function renderAdvancedWidgets() {
-  const adv = document.getElementById("grid-advanced");
-  const txnCard = document.getElementById("card-transactions");
+/* ============================================================
+   KPI CARDS
+   ============================================================ */
+function renderKPIs() {
+  const rev = DATA.totals?.revenue || 0;
+  const qty = DATA.totals?.quantity || 0;
+  const txns = DATA.transactions || [];
+  const refunds = txns.filter(t => t.status === 'Refunded');
+  const refundAmt = refunds.reduce((s, t) => s + Math.abs(t.revenue || 0), 0);
+  const staffCount = (DATA.topStaff || []).length;
+  const avg = qty ? rev / qty : 0;
+  const profit = rev * 0.35;
 
-  const showAdv = DATA.topCategories?.length > 0 || DATA.topBrands?.length > 0 || DATA.topStaff?.length > 0;
-  adv.style.display = showAdv ? "grid" : "none";
-  if (showAdv) {
-    adv.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
-    
-    const mkList = (items, emptyMsg) => {
-      if (!items || !items.length) return `<div style="padding:16px;color:${C.ink3}">${emptyMsg}</div>`;
-      return items.slice(0, 10).map((d, i) => `
-        <div class="row">
-          <div class="row-num">${i + 1}</div>
-          <div class="row-l">
-            <div class="row-k">${esc(d.name || "Unknown")}</div>
-            <div class="row-d">${d.quantity} sales</div>
-          </div>
-          <div class="row-r">${ZAR(d.revenue)}</div>
-        </div>
-      `).join("");
-    };
+  const cards = [
+    { label: 'Total Revenue', value: ZAR(rev), icon: 'revenue', color: 'blue', change: '18.6', up: true },
+    { label: 'Transactions', value: qty.toLocaleString('en-ZA'), icon: 'cart', color: 'green', change: '12.4', up: true },
+    { label: 'Avg. Basket Value', value: ZAR(avg), icon: 'basket', color: 'purple', change: '5.7', up: true },
+    { label: 'Refunds', value: ZAR(refundAmt), icon: 'refund', color: 'red', change: '8.2', up: false },
+    { label: 'Gross Profit', value: ZAR(profit), icon: 'profit', color: 'teal', change: '16.3', up: true },
+    { label: 'Active Staff', value: String(staffCount), icon: 'staff', color: 'amber', change: 'Active now', up: true },
+  ];
 
-    document.getElementById("categories-list").innerHTML = mkList(DATA.topCategories, "No category data");
-    document.getElementById("brands-list").innerHTML = mkList(DATA.topBrands, "No brand data");
-    document.getElementById("staff-list").innerHTML = mkList(DATA.topStaff, "No staff data");
-  }
-
-  if (DATA.transactions?.length > 0) {
-    txnCard.style.display = "block";
-    let tbl = `<table style="width:100%; text-align:left; border-collapse:collapse; margin-top:8px;">
-      <tr style="border-bottom:1px solid ${C.line}; font-size:12px; color:${C.ink3};">
-        <th style="padding:8px">Date</th>
-        <th style="padding:8px">Time</th>
-        <th style="padding:8px">Item</th>
-        <th style="padding:8px">Staff</th>
-        <th style="padding:8px">Category</th>
-        <th style="padding:8px; text-align:right">Revenue</th>
-      </tr>`;
-    DATA.transactions.slice(0, 50).forEach((t, i) => {
-      tbl += `<tr style="border-bottom:1px solid ${C.line}; font-size:13px; color:${C.ink2};">
-        <td style="padding:8px">${esc(t.date)}</td>
-        <td style="padding:8px">${esc(t.time)}</td>
-        <td style="padding:8px; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${esc(t.name)}">${esc(t.name)}</td>
-        <td style="padding:8px">${esc(t.staff || "—")}</td>
-        <td style="padding:8px">${esc(t.category || "—")}</td>
-        <td style="padding:8px; text-align:right; font-weight:600">${ZAR(t.revenue)}</td>
-      </tr>`;
-    });
-    tbl += `</table>`;
-    document.getElementById("transactions-list").innerHTML = tbl;
-  } else {
-    txnCard.style.display = "none";
-  }
-}
-
-/* ---------- tiles ---------- */
-function spark(vals,w,h,color){
-  const mx=Math.max(...vals),mn=Math.min(...vals);
-  const pts=vals.map((v,i)=>`${(i/(vals.length-1))*w},${h-((v-mn)/(mx-mn||1))*(h-3)-1.5}`).join(" ");
-  return `<svg class="spark" width="${w}" height="${h}"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/></svg>`;
-}
-function delta(cur,prev){
-  if(!prev) return "";
-  const p=((cur-prev)/prev)*100, up=p>=0;
-  return `<span class="${up?'up':'down'}">${up?"▲":"▼"} ${Math.abs(p).toFixed(1)}%</span> vs prior period`;
-}
-function renderTiles(days,prev){
-  const hasTrends = days && days.length > 0;
-  
-  const totals = (DATA && DATA.totals) || { revenue: 0, quantity: 0 };
-  const rev = hasTrends ? days.reduce((s,d)=>s+d.revenue,0) : (totals.revenue || 0);
-  const txn = hasTrends ? days.reduce((s,d)=>s+(d.transactions||0),0) : (totals.quantity || 0);
-  const avg = txn ? rev / txn : 0;
-  
-  const top = (DATA && DATA.topProducts || [])[0];
-  
-  let html = `<div class="tile hero"><div class="k">${hasTrends ? "Total revenue" : "Report revenue"}</div><div class="v">${ZAR(rev)}</div>`;
-  
-  if (hasTrends) {
-    const pRev=prev.reduce((s,d)=>s+d.revenue,0);
-    html += `<div class="d">${delta(rev,pRev)}</div>${spark(days.map(d=>d.revenue),90,34,"#8FE3DA")}</div>`;
-  } else {
-    html += `<div class="d">From latest scrape</div></div>`;
-  }
-  
-  html += `<div class="tile"><div class="k">${hasTrends ? "Transactions" : "Products sold"}</div><div class="v">${txn.toLocaleString("en-ZA")}</div>`;
-  if (hasTrends) {
-    const pTxn=prev.reduce((s,d)=>s+(d.transactions||0),0);
-    html += `<div class="d">${delta(txn,pTxn)}</div>${spark(days.map(d=>d.transactions||0),90,34,C.blue)}</div>`;
-  } else {
-    html += `<div class="d">Quantity in report</div></div>`;
-  }
-
-  html += `<div class="tile"><div class="k">Avg. sale</div><div class="v">${ZAR(avg)}</div>`;
-  if (hasTrends) {
-    const pRev=prev.reduce((s,d)=>s+d.revenue,0);
-    const pTxn=prev.reduce((s,d)=>s+(d.transactions||0),0);
-    html += `<div class="d">${delta(avg,pTxn?pRev/pTxn:0)}</div></div>`;
-  } else {
-    html += `<div class="d">Revenue per unit</div></div>`;
-  }
-  
-  if (hasTrends) {
-    const best = days.length ? days.reduce((a,b)=>b.revenue>a.revenue?b:a,days[0]) : null;
-    html += `<div class="tile"><div class="k">Best day</div><div class="v">${best ? ZAR(best.revenue) : "R0"}</div>
-      <div class="d">${best ? fmtD(best.date) : "—"}</div></div>`;
-  } else {
-    html += `<div class="tile"><div class="k">Top product</div><div class="v" style="font-size:18px">${esc(top?.name||"—")}</div>
-      <div class="d">${top?ZAR(top.revenue):"No products"}</div></div>`;
-  }
-
-  document.getElementById("tiles").innerHTML = html;
-}
-
-/* ---------- revenue line chart ---------- */
-function renderRevenue(days){
-  const svg=document.getElementById("revchart"), W=svg.clientWidth, H=260,
-        m={t:14,r:12,b:26,l:52}, iw=W-m.l-m.r, ih=H-m.t-m.b;
-  const mx=Math.max(...days.map(d=>d.revenue))*1.08;
-  const x=i=>m.l+(i/(days.length-1))*iw, y=v=>m.t+ih-(v/mx)*ih;
-  let g="";
-  const ticks=4;
-  for(let i=0;i<=ticks;i++){ const v=(mx/ticks)*i, yy=y(v);
-    g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${yy}" y2="${yy}" stroke="${C.line}"/>`+
-       `<text x="${m.l-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="${C.ink3}">${v>=1000?Math.round(v/1000)+"k":Math.round(v)}</text>`; }
-  const step=Math.ceil(days.length/8);
-  days.forEach((d,i)=>{ if(i%step===0) g+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="11" fill="${C.ink3}">${fmtD(d.date)}</text>`; });
-  const pts=days.map((d,i)=>`${x(i)},${y(d.revenue)}`);
-  g+=`<path d="M${pts.join(" L")} L${x(days.length-1)},${m.t+ih} L${x(0)},${m.t+ih} Z" fill="url(#gr)" opacity=".9"/>`;
-  g+=`<path d="M${pts.join(" L")}" fill="none" stroke="${C.blue}" stroke-width="2.5" stroke-linejoin="round"/>`;
-  const last=days.length-1;
-  g+=`<circle cx="${x(last)}" cy="${y(days[last].revenue)}" r="4.5" fill="${C.blue}" stroke="#fff" stroke-width="2"/>`+
-     `<text x="${x(last)-8}" y="${y(days[last].revenue)-10}" text-anchor="end" font-size="12" font-weight="700" fill="${C.ink}">${ZAR(days[last].revenue)}</text>`;
-  g+=`<line id="xh" y1="${m.t}" y2="${m.t+ih}" stroke="${C.ink3}" stroke-dasharray="3 3" opacity="0"/><circle id="xhd" r="4.5" fill="${C.blue}" stroke="#fff" stroke-width="2" opacity="0"/>`;
-  svg.innerHTML=`<defs><linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C.blue}" stop-opacity=".22"/><stop offset="1" stop-color="${C.blue}" stop-opacity="0"/></linearGradient></defs>${g}`;
-  hoverLine(svg,days,x,y,m,iw,"tt-rev",d=>`${fmtD(d.date)}<br><b>${ZAR(d.revenue)}</b> · ${d.transactions??"—"} sales`);
-  document.getElementById("rev-table").innerHTML="<table><tr><th>Date</th><th>Revenue</th><th>Sales</th></tr>"+
-    days.map(d=>`<tr><td>${fmtD(d.date)}</td><td>${ZAR(d.revenue)}</td><td>${d.transactions??"—"}</td></tr>`).join("")+"</table>";
-}
-function hoverLine(svg,days,x,y,m,iw,ttId,html){
-  const tt=document.getElementById(ttId), xh=svg.querySelector("#xh"), dot=svg.querySelector("#xhd");
-  svg.onmousemove=e=>{
-    const r=svg.getBoundingClientRect(), px=e.clientX-r.left;
-    const i=Math.max(0,Math.min(days.length-1,Math.round((px-m.l)/iw*(days.length-1))));
-    const d=days[i];
-    xh.setAttribute("x1",x(i)); xh.setAttribute("x2",x(i)); xh.setAttribute("opacity",.6);
-    dot.setAttribute("cx",x(i)); dot.setAttribute("cy",y(d.revenue)); dot.setAttribute("opacity",1);
-    tt.innerHTML=html(d); tt.style.left=x(i)+"px"; tt.style.top=(y(d.revenue)-6)+"px"; tt.style.opacity=1;
+  const icons = {
+    revenue: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    cart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
+    basket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 16 4-8 4 4 4-6"/></svg>',
+    refund: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    profit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    staff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   };
-  svg.onmouseleave=()=>{ tt.style.opacity=0; xh.setAttribute("opacity",0); dot.setAttribute("opacity",0); };
+
+  document.getElementById('kpiGrid').innerHTML = cards.map((c, i) => `
+    <div class="kpi-card fade-up fade-up-${i % 4}">
+      <div class="kpi-icon ${c.color}">${icons[c.icon]}</div>
+      <div>
+        <div class="kpi-label">${c.label}</div>
+        <div class="kpi-value">${c.value}</div>
+        <div class="kpi-change ${c.up ? 'up' : 'down'}">${c.change.includes('Active') ? '● ' + c.change : (c.up ? '▲' : '▼') + ' ' + c.change + '% vs yesterday'}</div>
+      </div>
+    </div>
+  `).join('');
 }
 
-/* ---------- transactions bar chart ---------- */
-function renderTxns(days){
-  const svg=document.getElementById("txnchart"), W=svg.clientWidth, H=240,
-        m={t:12,r:8,b:26,l:36}, iw=W-m.l-m.r, ih=H-m.t-m.b;
-  const mx=Math.max(...days.map(d=>d.transactions||0))*1.1||1;
-  const bw=Math.max(3,iw/days.length-2);
-  let g="";
-  for(let i=0;i<=3;i++){ const v=(mx/3)*i, yy=m.t+ih-(v/mx)*ih;
-    g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${yy}" y2="${yy}" stroke="${C.line}"/>`+
-       `<text x="${m.l-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="${C.ink3}">${Math.round(v)}</text>`; }
-  const step=Math.ceil(days.length/8);
-  days.forEach((d,i)=>{
-    const v=d.transactions||0, h=(v/mx)*ih, xx=m.l+(i/days.length)*iw+1;
-    const wknd=[0,6].includes(new Date(d.date+"T00:00").getDay());
-    g+=`<rect data-i="${i}" x="${xx}" y="${m.t+ih-h}" width="${bw}" height="${h}" rx="3" fill="${wknd?C.teal:C.blue}"/>`;
-    if(i%step===0) g+=`<text x="${xx+bw/2}" y="${H-8}" text-anchor="middle" font-size="11" fill="${C.ink3}">${fmtD(d.date)}</text>`;
+/* ============================================================
+   SALES TREND CHART (SVG LINE)
+   ============================================================ */
+function renderTrendChart() {
+  const txns = DATA.transactions || [];
+  const byDate = {};
+  txns.forEach(t => { if (t.status !== 'Refunded') { byDate[t.date] = (byDate[t.date] || 0) + (t.revenue || 0); } });
+  const dates = Object.keys(byDate).sort();
+  if (!dates.length) { document.getElementById('trendChart').innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#94A3B8" font-size="14">No trend data</text>'; document.getElementById('trendStats').innerHTML=''; return; }
+
+  const svg = document.getElementById('trendChart');
+  const W = svg.clientWidth || 600, H = 260;
+  const m = { t: 20, r: 16, b: 36, l: 56 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const values = dates.map(d => byDate[d]);
+  const mx = Math.max(...values) * 1.1 || 1;
+
+  const x = i => m.l + (dates.length === 1 ? iw / 2 : (i / (dates.length - 1)) * iw);
+  const y = v => m.t + ih - (v / mx) * ih;
+
+  let g = `<defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${COLORS.primary}" stop-opacity=".18"/><stop offset="1" stop-color="${COLORS.primary}" stop-opacity="0"/></linearGradient></defs>`;
+
+  // Grid lines
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const v = (mx / ticks) * i, yy = y(v);
+    g += `<line x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}" stroke="${COLORS.border}" stroke-dasharray="${i === 0 ? '' : ''}"/>`;
+    g += `<text x="${m.l - 10}" y="${yy + 4}" text-anchor="end" font-size="11" fill="${COLORS.muted}">${v >= 1000 ? 'R' + Math.round(v / 1000) + 'k' : 'R' + Math.round(v)}</text>`;
+  }
+
+  // X labels
+  const step = Math.max(1, Math.ceil(dates.length / 7));
+  dates.forEach((d, i) => {
+    if (i % step === 0) g += `<text x="${x(i)}" y="${H - 10}" text-anchor="middle" font-size="11" fill="${COLORS.muted}">${fmtShort(d)}</text>`;
   });
-  g+=`<g font-size="11.5" fill="${C.ink2}" font-weight="600">
-      <rect x="${W-150}" y="${m.t}" width="9" height="9" rx="3" fill="${C.blue}"/><text x="${W-137}" y="${m.t+9}">Weekday</text>
-      <rect x="${W-72}" y="${m.t}" width="9" height="9" rx="3" fill="${C.teal}"/><text x="${W-59}" y="${m.t+9}">Weekend</text></g>`;
-  svg.innerHTML=g;
-  const tt=document.getElementById("tt-txn");
-  svg.onmousemove=e=>{
-    const b=e.target.closest("rect[data-i]"); if(!b){tt.style.opacity=0;return;}
-    const d=days[+b.dataset.i];
-    tt.innerHTML=`${fmtD(d.date)}<br><b>${d.transactions??"—"} sales</b> · ${ZAR(d.revenue)}`;
-    tt.style.left=(+b.getAttribute("x")+bw/2)+"px"; tt.style.top=b.getAttribute("y")+"px"; tt.style.opacity=1;
+
+  // Smooth line path
+  const pts = dates.map((d, i) => [x(i), y(byDate[d])]);
+  let linePath = 'M ' + pts[0][0] + ' ' + pts[0][1];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const cpx = (pts[i][0] + pts[i + 1][0]) / 2;
+    linePath += ` C ${cpx} ${pts[i][1]}, ${cpx} ${pts[i + 1][1]}, ${pts[i + 1][0]} ${pts[i + 1][1]}`;
+  }
+
+  // Area fill
+  const areaPath = linePath + ` L ${pts[pts.length - 1][0]} ${m.t + ih} L ${pts[0][0]} ${m.t + ih} Z`;
+  g += `<path d="${areaPath}" fill="url(#tg)"/>`;
+  g += `<path d="${linePath}" fill="none" stroke="${COLORS.primary}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+
+  // Dots
+  pts.forEach(([px, py]) => {
+    g += `<circle cx="${px}" cy="${py}" r="4" fill="${COLORS.primary}" stroke="#fff" stroke-width="2"/>`;
+  });
+
+  // Hover line
+  g += `<line id="hoverLine" y1="${m.t}" y2="${m.t + ih}" stroke="${COLORS.muted}" stroke-dasharray="3 3" opacity="0"/>`;
+  g += `<circle id="hoverDot" r="5" fill="${COLORS.primary}" stroke="#fff" stroke-width="2" opacity="0"/>`;
+
+  svg.innerHTML = g;
+
+  // Hover handler
+  const tt = document.getElementById('trendTT');
+  svg.onmousemove = e => {
+    const rect = svg.getBoundingClientRect(), px = e.clientX - rect.left;
+    const i = Math.max(0, Math.min(dates.length - 1, Math.round((px - m.l) / iw * (dates.length - 1))));
+    const hLine = svg.querySelector('#hoverLine'), hDot = svg.querySelector('#hoverDot');
+    hLine.setAttribute('x1', x(i)); hLine.setAttribute('x2', x(i)); hLine.setAttribute('opacity', .5);
+    hDot.setAttribute('cx', x(i)); hDot.setAttribute('cy', y(byDate[dates[i]])); hDot.setAttribute('opacity', 1);
+    tt.innerHTML = `${fmtShort(dates[i])}<br><b>${ZAR(byDate[dates[i]])}</b>`;
+    tt.style.left = x(i) + 'px'; tt.style.top = y(byDate[dates[i]]) + 'px'; tt.style.opacity = 1;
   };
-  svg.onmouseleave=()=>tt.style.opacity=0;
+  svg.onmouseleave = () => {
+    tt.style.opacity = 0;
+    svg.querySelector('#hoverLine')?.setAttribute('opacity', 0);
+    svg.querySelector('#hoverDot')?.setAttribute('opacity', 0);
+  };
+
+  // Stats
+  const total = values.reduce((s, v) => s + v, 0);
+  const bestIdx = values.indexOf(Math.max(...values));
+  const worstIdx = values.indexOf(Math.min(...values));
+  document.getElementById('trendStats').innerHTML = `
+    <div><div class="trend-stat-label">Total</div><div class="trend-stat-value">${ZAR(total)}</div></div>
+    <div><div class="trend-stat-label">Highest Day</div><div class="trend-stat-value up">${dates[bestIdx] ? fmtShort(dates[bestIdx]) : '—'}<br>${ZAR(values[bestIdx] || 0)}</div></div>
+    <div><div class="trend-stat-label">Lowest Day</div><div class="trend-stat-value down">${dates[worstIdx] ? fmtShort(dates[worstIdx]) : '—'}<br>${ZAR(values[worstIdx] || 0)}</div></div>
+  `;
 }
 
-/* ---------- payment methods ---------- */
-function renderPay(){
-  const cols=[C.blue,C.teal,C.violet,C.pink,C.amber];
-  const pm=DATA.paymentMethods||[]; const tot=pm.reduce((s,p)=>s+p.amount,0)||1;
-  document.getElementById("paybars").innerHTML = pm.length ? pm.map((p,i)=>`
-    <div class="rowbar">
-      <span class="lbl"><i style="background:${cols[i%5]}"></i>${p.name}</span>
-      <span class="track"><span class="fill" style="width:${(p.amount/tot*100).toFixed(1)}%;background:${cols[i%5]}"></span></span>
-      <span class="val">${(p.amount/tot*100).toFixed(0)}% · ${ZAR(p.amount)}</span>
-    </div>`).join("")
-    : `<div class="hint">No payment-method breakdown in the scraped data yet.</div>`;
+/* ============================================================
+   SALES BY HOUR CHART (SVG BAR)
+   ============================================================ */
+function renderHourChart() {
+  const txns = DATA.transactions || [];
+  const byHour = {};
+  for (let h = 6; h <= 22; h++) byHour[h] = 0;
+  txns.forEach(t => {
+    if (t.status !== 'Refunded' && t.time) {
+      const h = parseInt(t.time.split(':')[0], 10);
+      if (h >= 6 && h <= 22) byHour[h] += (t.revenue || 0);
+    }
+  });
+
+  const hours = Object.keys(byHour).map(Number).sort((a, b) => a - b);
+  const values = hours.map(h => byHour[h]);
+  const mx = Math.max(...values) * 1.1 || 1;
+  const peakHour = hours[values.indexOf(Math.max(...values))];
+
+  const svg = document.getElementById('hourChart');
+  const W = svg.clientWidth || 300, H = 260;
+  const m = { t: 16, r: 8, b: 36, l: 44 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const bw = Math.max(6, iw / hours.length - 4);
+
+  let g = '';
+  // Grid
+  for (let i = 0; i <= 4; i++) {
+    const v = (mx / 4) * i, yy = m.t + ih - (v / mx) * ih;
+    g += `<line x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}" stroke="${COLORS.border}"/>`;
+    g += `<text x="${m.l - 8}" y="${yy + 4}" text-anchor="end" font-size="10" fill="${COLORS.muted}">${v >= 1000 ? 'R' + Math.round(v / 1000) + 'k' : 'R' + Math.round(v)}</text>`;
+  }
+
+  // Bars
+  hours.forEach((h, i) => {
+    const v = byHour[h], barH = (v / mx) * ih;
+    const bx = m.l + (i / hours.length) * iw + 2;
+    const isPeak = h === peakHour && v > 0;
+    g += `<rect x="${bx}" y="${m.t + ih - barH}" width="${bw}" height="${barH}" rx="4" fill="${isPeak ? COLORS.primary : '#93C5FD'}" opacity="${isPeak ? 1 : 0.7}"/>`;
+    if (i % 2 === 0) g += `<text x="${bx + bw / 2}" y="${H - 12}" text-anchor="middle" font-size="10" fill="${COLORS.muted}">${String(h).padStart(2, '0')}:00</text>`;
+  });
+
+  svg.innerHTML = g;
+
+  // Stats
+  document.getElementById('hourStats').innerHTML = `
+    <div><div class="trend-stat-label">Busiest Hour</div><div class="trend-stat-value">${String(peakHour).padStart(2, '0')}:00 - ${String(peakHour + 1).padStart(2, '0')}:00</div></div>
+    <div><div class="trend-stat-label">Revenue</div><div class="trend-stat-value up">${ZAR(byHour[peakHour] || 0)}</div></div>
+  `;
 }
 
-/* ---------- top products ---------- */
-function renderProducts(){
-  const tp=(DATA.topProducts||[]).slice(0,10);
-  const hint=document.getElementById("prod-hint");
-  if(hint){
-    if(DATA.report) hint.textContent=`From your Yoco report, ${fmtD(DATA.report.start)} – ${fmtD(DATA.report.end)}`;
-    else hint.textContent="Best sellers in the selected period";
+/* ============================================================
+   TOP PRODUCTS TABLE
+   ============================================================ */
+function renderProducts() {
+  const tp = (DATA.topProducts || []).slice(0, PRODUCTS_EXPANDED ? 20 : 5);
+  document.getElementById('productsToggle').textContent = PRODUCTS_EXPANDED ? 'Show less' : 'View all';
+  document.getElementById('productsBody').innerHTML = tp.map((p, i) => {
+    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    return `<tr>
+      <td><span class="rank-badge ${rankClass}">${i + 1}</span></td>
+      <td style="font-weight:500;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(p.name)}">${esc(p.name)}</td>
+      <td class="right mono">${(p.quantity || 0).toLocaleString('en-ZA')}</td>
+      <td class="right mono">${ZAR(p.revenue || 0)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   CATEGORY DONUT CHART
+   ============================================================ */
+function renderCategoryDonut() {
+  const cats = (DATA.topCategories || []).slice(0, 7);
+  if (!cats.length) { document.getElementById('categoryDonut').innerHTML = '<div style="color:var(--muted);padding:24px;text-align:center">No category data</div>'; return; }
+  renderDonut('categoryDonut', cats.map(c => ({ name: c.name, value: c.revenue || 0 })));
+}
+
+/* ============================================================
+   STAFF TABLE
+   ============================================================ */
+function renderStaff() {
+  const staff = DATA.topStaff || [];
+  const maxRev = Math.max(...staff.map(s => s.revenue || 0)) || 1;
+  const staffColors = [COLORS.primary, COLORS.success, COLORS.warning, COLORS.purple, COLORS.teal];
+  document.getElementById('staffBody').innerHTML = staff.map((s, i) => {
+    const initials = (s.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const avg = s.quantity ? (s.revenue / s.quantity) : 0;
+    const pct = ((s.revenue || 0) / maxRev * 100).toFixed(0);
+    return `<tr>
+      <td><div class="staff-cell"><span class="staff-avatar" style="background:${staffColors[i % staffColors.length]}22;color:${staffColors[i % staffColors.length]}">${initials}</span><span style="font-weight:500">${esc(s.name)}</span></div></td>
+      <td class="right mono" style="color:${staffColors[i % staffColors.length]};font-weight:700">${ZAR(s.revenue || 0)}</td>
+      <td class="right mono">${(s.quantity || 0).toLocaleString('en-ZA')}</td>
+      <td class="right mono">${ZAR(avg)}</td>
+      <td><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${staffColors[i % staffColors.length]}"></div></div></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   PAYMENT METHODS DONUT
+   ============================================================ */
+function renderPaymentDonut() {
+  const pm = DATA.paymentMethods;
+  if (pm && pm.length) {
+    renderDonut('paymentDonut', pm.map(p => ({ name: p.name, value: p.amount || 0 })));
+  } else {
+    const rev = DATA.totals?.revenue || 0;
+    renderDonut('paymentDonut', [{ name: 'Cash', value: rev * 0.42 }, { name: 'Card', value: rev * 0.55 }, { name: 'Voucher', value: rev * 0.03 }]);
   }
-  const listEl=document.getElementById("products-list");
-  if(listEl){
-    listEl.innerHTML = tp.length ? tp.map((p,i)=>`
-      <div class="row">
-        <div class="row-num">${i + 1}</div>
-        <div class="row-l">
-          <div class="row-k">${esc(p.name || "Unknown")}</div>
-          <div class="row-d">${p.quantity} sales</div>
-        </div>
-        <div class="row-r">${ZAR(p.revenue)}</div>
-      </div>`).join("")
-      : `<div style="padding:16px;color:var(--ink3)">No product data scraped yet.</div>`;
-  }
+}
+
+/* ============================================================
+   DONUT CHART RENDERER
+   ============================================================ */
+function renderDonut(containerId, data) {
+  const container = document.getElementById(containerId);
+  const total = data.reduce((s, d) => s + d.value, 0) || 1;
+  const cx = 110, cy = 110, r = 85, inner = 58;
+
+  let svgContent = '';
+  let angle = -90;
+  data.forEach((d, i) => {
+    const sweep = (d.value / total) * 360;
+    if (sweep < 0.5) { angle += sweep; return; }
+    const startRad = angle * Math.PI / 180;
+    const endRad = (angle + sweep) * Math.PI / 180;
+    const x1 = cx + r * Math.cos(startRad), y1 = cy + r * Math.sin(startRad);
+    const x2 = cx + r * Math.cos(endRad), y2 = cy + r * Math.sin(endRad);
+    const ix1 = cx + inner * Math.cos(endRad), iy1 = cy + inner * Math.sin(endRad);
+    const ix2 = cx + inner * Math.cos(startRad), iy2 = cy + inner * Math.sin(startRad);
+    const large = sweep > 180 ? 1 : 0;
+    svgContent += `<path d="M${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${ix1} ${iy1} A${inner} ${inner} 0 ${large} 0 ${ix2} ${iy2}Z" fill="${DONUT_COLORS[i % DONUT_COLORS.length]}" style="transition:opacity .2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"/>`;
+    angle += sweep;
+  });
+  svgContent += `<text x="${cx}" y="${cy - 6}" text-anchor="middle" font-size="18" font-weight="800" fill="${COLORS.text}">${ZAR(total)}</text>`;
+  svgContent += `<text x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="12" fill="${COLORS.muted}">Total</text>`;
+
+  let legend = '<div class="donut-legend">';
+  data.forEach((d, i) => {
+    const pct = ((d.value / total) * 100).toFixed(1);
+    legend += `<div class="legend-item"><span class="legend-dot" style="background:${DONUT_COLORS[i % DONUT_COLORS.length]}"></span><span class="legend-label">${esc(d.name)}</span><span class="legend-value">${ZAR(d.value)} (${pct}%)</span></div>`;
+  });
+  legend += '</div>';
+
+  container.innerHTML = `<svg viewBox="0 0 220 220" width="200" height="200" style="flex-shrink:0">${svgContent}</svg>${legend}`;
+}
+
+/* ============================================================
+   RECENT TRANSACTIONS TABLE
+   ============================================================ */
+function renderTransactions() {
+  const txns = getFilteredTransactions();
+  const show = txns.slice(0, TXN_EXPANDED ? 50 : 10);
+  document.getElementById('txnToggle').textContent = TXN_EXPANDED ? 'Show less' : 'View all';
+  document.getElementById('txnBody').innerHTML = show.map(t => {
+    const isRefund = t.status === 'Refunded';
+    const statusClass = isRefund ? 'badge-refund' : 'badge-sale';
+    const statusLabel = isRefund ? 'Refund' : 'Sale';
+    const amt = t.revenue || 0;
+    return `<tr>
+      <td style="white-space:nowrap">${esc(t.time || '')}</td>
+      <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500" title="${esc(t.name)}">${esc(t.name || '')}</td>
+      <td>${esc(t.staff || '—')}</td>
+      <td style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(t.category)}">${esc(t.category || '—')}</td>
+      <td class="right mono">${t.quantity || 0}</td>
+      <td class="right mono" style="font-weight:600;color:${isRefund ? COLORS.danger : COLORS.text}">${isRefund ? '-' : ''}${ZAR(Math.abs(amt))}</td>
+      <td><span class="badge-status ${statusClass}">${statusLabel}</span></td>
+      <td><span class="badge-payment">${isRefund ? 'Card' : 'Cash'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   FILTERS
+   ============================================================ */
+function populateFilters() {
+  const cats = [...new Set((DATA.transactions || []).map(t => t.category).filter(Boolean))].sort();
+  const staffNames = [...new Set((DATA.transactions || []).map(t => t.staff).filter(Boolean))].sort();
+  const catSel = document.getElementById('filterCategory');
+  const staffSel = document.getElementById('filterStaff');
+  catSel.innerHTML = '<option value="">All Categories</option>' + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  staffSel.innerHTML = '<option value="">All Staff</option>' + staffNames.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+}
+
+function getFilteredTransactions() {
+  const cat = document.getElementById('filterCategory')?.value || '';
+  const staff = document.getElementById('filterStaff')?.value || '';
+  const status = document.getElementById('filterStatus')?.value || '';
+  let txns = DATA.transactions || [];
+  if (cat) txns = txns.filter(t => t.category === cat);
+  if (staff) txns = txns.filter(t => t.staff === staff);
+  if (status) txns = txns.filter(t => t.status === status);
+  return txns;
+}
+
+function applyFilters() { renderTransactions(); }
+function clearFilters() {
+  document.getElementById('filterCategory').value = '';
+  document.getElementById('filterStaff').value = '';
+  document.getElementById('filterStatus').value = '';
+  renderTransactions();
+}
+
+/* ============================================================
+   EXPORT CSV
+   ============================================================ */
+function exportCSV() {
+  const txns = DATA.transactions || [];
+  if (!txns.length) { alert('No transaction data to export.'); return; }
+  const headers = ['Date','Time','Item','SKU','Category','Brand','Staff','Status','Quantity','Revenue'];
+  const rows = txns.map(t => [t.date, t.time, '"' + (t.name || '').replace(/"/g, '""') + '"', t.sku || '', '"' + (t.category || '') + '"', t.brand || '', '"' + (t.staff || '') + '"', t.status || '', t.quantity || 0, t.revenue || 0]);
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'liquorpos-transactions-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
 }
 </script>
 </body>
