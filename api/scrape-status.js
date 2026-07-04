@@ -79,7 +79,7 @@ module.exports = async (req, res) => {
       data: null,
     };
 
-    // 2. If completed successfully, fetch the fresh data via Contents API (no CDN cache)
+    // 2. If completed successfully, fetch the fresh data via Git Blobs API (no CDN cache, supports >1MB)
     if (run.status === "completed" && run.conclusion === "success") {
       try {
         const contentsRes = await githubApi(
@@ -87,14 +87,21 @@ module.exports = async (req, res) => {
         );
         if (contentsRes.ok) {
           const contentsData = await contentsRes.json();
-          if (contentsData.content) {
-            const decoded = Buffer.from(contentsData.content, "base64").toString("utf8");
-            result.data = JSON.parse(decoded);
+          if (contentsData && contentsData.sha) {
+            const blobRes = await githubApi(`/git/blobs/${contentsData.sha}`);
+            if (blobRes.ok) {
+              const blobData = await blobRes.json();
+              if (blobData.content) {
+                const cleanedContent = blobData.content.replace(/\s/g, "");
+                const decoded = Buffer.from(cleanedContent, "base64").toString("utf8");
+                result.data = JSON.parse(decoded);
+              }
+            }
           }
         }
       } catch (dataErr) {
         // Non-fatal: return status without data, frontend will fall back to CDN
-        console.warn("Could not fetch data via Contents API:", dataErr.message);
+        console.warn("Could not fetch data via Git Blobs API:", dataErr.message);
       }
     }
 
