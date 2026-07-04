@@ -10,6 +10,13 @@
       "shot": "step-01-login-page.png",
       "at": "2026-07-04T13:31:28.852Z",
       "ms": 4718
+    },
+    {
+      "n": 2,
+      "name": "email-filled",
+      "shot": "step-02-email-filled.png",
+      "at": "2026-07-04T13:31:29.868Z",
+      "ms": 1016
     }
   ]
 }
