@@ -941,6 +941,14 @@ async function connectYoco() {
   btnLabel.textContent = 'Connecting…';
   setConnectStatus('Securing credentials and starting scraper…');
   try {
+    let lastScrapedTime = 0;
+    try {
+      const currentData = await fetchLiveData();
+      lastScrapedTime = new Date(currentData.scrapedAt).getTime();
+    } catch (e) {
+      console.warn('Could not fetch pre-existing scrape time:', e);
+    }
+
     const res = await fetch(CONNECT_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -948,7 +956,6 @@ async function connectYoco() {
     });
     const payload = await res.json().catch(() => ({}));
     if (!res.ok || !payload.ok) throw new Error(payload.error || 'Connect failed (' + res.status + ')');
-    const lastScrapedTime = LIVE ? new Date(LIVE.scrapedAt).getTime() : 0;
     document.getElementById('yocoPassword').value = '';
     setConnectStatus('Login saved. Scraper is running…');
     await waitForLiveData(lastScrapedTime);
