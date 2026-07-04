@@ -603,7 +603,7 @@ function parseReport(path, range) {
     topCategories,
     topBrands,
     topStaff,
-    transactions: rawTransactions.slice(0, 500), // Limit to 500 to avoid massive payloads
+    transactions: rawTransactions,
     totals: {
       revenue: topProducts.reduce((s, p) => s + p.revenue, 0),
       quantity: topProducts.reduce((s, p) => s + p.quantity, 0),

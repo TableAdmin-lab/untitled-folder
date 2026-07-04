@@ -461,7 +461,7 @@ input { font: inherit; }
       <div class="logo-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       </div>
-      <span>LiquorPOS</span>
+      <span>POS Analytics</span>
     </div>
     <nav class="sidebar-nav">
       <button class="nav-item active" data-tab="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></button>
@@ -498,13 +498,7 @@ input { font: inherit; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export
         </button>
-        <div class="user-info">
-          <div>
-            <div class="user-name" id="userName">Admin</div>
-            <div class="user-role">Admin</div>
-          </div>
-          <div class="avatar" id="userAvatar">AD</div>
-        </div>
+
       </div>
     </header>
 
@@ -1187,7 +1181,7 @@ function boot(mode) {
   setTimeout(hideProgress, 300);
 }
 
-initData();
+boot('empty');
 
 /* ============================================================
    RENDER ORCHESTRATOR
@@ -1202,14 +1196,7 @@ function render() {
     document.getElementById('dateRangeText').textContent = new Date().toLocaleDateString('en-ZA', {day:'numeric',month:'short',year:'numeric'});
   }
 
-  // User info
-  const staff = DATA.topStaff || [];
-  if (staff.length) {
-    const name = staff[0].name;
-    document.getElementById('userName').textContent = name;
-    const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-    document.getElementById('userAvatar').textContent = initials;
-  }
+
 
   // Populate filter dropdowns
   populateFilters();
@@ -1248,7 +1235,7 @@ function renderKPIs() {
   ];
 
   const icons = {
-    revenue: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    revenue: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>',
     cart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
     basket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 16 4-8 4 4 4-6"/></svg>',
     refund: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
