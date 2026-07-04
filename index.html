@@ -951,56 +951,38 @@ function setConnectStatus(msg, type) {
   }
 }
 
-let progressInterval = null;
-function startConnectProgress() {
+function showConnectProgress() {
   const wrap = document.getElementById('connectProgressWrap');
+  if (wrap) wrap.style.display = 'block';
+}
+function updateConnectProgress(pct, label) {
   const stage = document.getElementById('connectProgressStage');
   const percentText = document.getElementById('connectProgressPercent');
   const fill = document.getElementById('connectProgressFill');
-  
-  if (!wrap) return;
-  wrap.style.display = 'block';
-  
-  if (progressInterval) clearInterval(progressInterval);
-  
-  let pct = 0;
-  const duration = 90000; // 90 seconds
-  const start = Date.now();
-  
-  progressInterval = setInterval(() => {
-    const elapsed = Date.now() - start;
-    pct = Math.min(99, Math.floor((elapsed / duration) * 100));
-    
-    if (percentText) percentText.textContent = pct + '%';
-    if (fill) fill.style.width = pct + '%';
-    
-    if (stage) {
-      if (pct < 10) stage.textContent = 'Launching pipeline scraper…';
-      else if (pct < 25) stage.textContent = 'Setting up runtime environment…';
-      else if (pct < 45) stage.textContent = 'Signing in to Yoco portal…';
-      else if (pct < 65) stage.textContent = 'Downloading sales data spreadsheet…';
-      else if (pct < 80) stage.textContent = 'Parsing transaction entries…';
-      else if (pct < 95) stage.textContent = 'Pushing data package to dashboard…';
-      else stage.textContent = 'Completing scrape. Checking data…';
-    }
-  }, 200);
+  if (stage) stage.textContent = label;
+  if (percentText) percentText.textContent = Math.round(pct) + '%';
+  if (fill) fill.style.width = Math.round(pct) + '%';
 }
-
-function completeConnectProgress() {
-  if (progressInterval) clearInterval(progressInterval);
-  const stage = document.getElementById('connectProgressStage');
-  const percentText = document.getElementById('connectProgressPercent');
-  const fill = document.getElementById('connectProgressFill');
-  
-  if (stage) stage.textContent = 'Import completed!';
-  if (percentText) percentText.textContent = '100%';
-  if (fill) fill.style.width = '100%';
-}
-
 function hideConnectProgress() {
-  if (progressInterval) clearInterval(progressInterval);
   const wrap = document.getElementById('connectProgressWrap');
   if (wrap) wrap.style.display = 'none';
+}
+
+function statusEndpoint() {
+  return CONNECT_ENDPOINT.replace('connect-yoco', 'scrape-status');
+}
+
+function progressFromStatus(status, elapsed) {
+  if (status === 'queued') {
+    return { pct: 5 + Math.min(10, elapsed * 0.5), label: 'Queuing pipeline runner…' };
+  }
+  if (status === 'in_progress') {
+    if (elapsed < 30) return { pct: 15 + (elapsed / 30) * 20, label: 'Setting up runtime environment…' };
+    if (elapsed < 60) return { pct: 35 + ((elapsed - 30) / 30) * 20, label: 'Signing in to Yoco portal…' };
+    if (elapsed < 90) return { pct: 55 + ((elapsed - 60) / 30) * 20, label: 'Downloading sales data…' };
+    return { pct: 75 + Math.min(10, (elapsed - 90) * 0.1), label: 'Processing transactions…' };
+  }
+  return { pct: 85, label: 'Importing data to dashboard…' };
 }
 
 /* ============================================================
@@ -1037,22 +1019,61 @@ async function fetchLiveData() {
 }
 
 async function waitForLiveData(lastScrapedTime) {
-  const deadline = Date.now() + 6 * 60 * 1000;
-  let attempt = 0;
+  const deadline = Date.now() + 8 * 60 * 1000;
+  const endpoint = statusEndpoint();
+  let workflowDone = false;
+
   while (Date.now() < deadline) {
-    attempt++;
-    await pause(attempt === 1 ? 12000 : 18000);
-    setConnectStatus('Scrape is running. Checking for updated data…');
+    await pause(workflowDone ? 5000 : 8000);
+
     try {
-      const d = await fetchLiveData();
-      const newTime = new Date(d.scrapedAt).getTime();
-      if (newTime > lastScrapedTime) {
-        completeConnectProgress();
-        LIVE = d; DATA = d; DATA.mode = 'live';
-        boot('live');
-        setConnectStatus('Connected. Live data is ready.', 'success');
-        setTimeout(closeConnect, 1200);
-        return true;
+      const res = await fetch(endpoint + '?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) { console.warn('Status poll HTTP', res.status); continue; }
+      const s = await res.json();
+      if (!s.ok) { console.warn('Status poll error:', s.error); continue; }
+
+      // Update progress bar from real status
+      const p = progressFromStatus(s.status, s.elapsed_seconds || 0);
+      updateConnectProgress(p.pct, p.label);
+      setConnectStatus(p.label);
+
+      if (s.status === 'completed' && s.conclusion === 'success') {
+        workflowDone = true;
+
+        // Check if inline data is present and fresh
+        if (s.data && s.data.scrapedAt) {
+          const newTime = new Date(s.data.scrapedAt).getTime();
+          if (newTime > lastScrapedTime) {
+            updateConnectProgress(95, 'Importing data to dashboard…');
+            LIVE = s.data; DATA = s.data; DATA.mode = 'live';
+            boot('live');
+            updateConnectProgress(100, 'Import completed!');
+            setConnectStatus('Connected. Live data is ready.', 'success');
+            setTimeout(closeConnect, 1200);
+            return true;
+          }
+        }
+
+        // Fallback: try raw CDN in case data wasn't inline
+        try {
+          const d = await fetchLiveData();
+          const newTime = new Date(d.scrapedAt).getTime();
+          if (newTime > lastScrapedTime) {
+            updateConnectProgress(95, 'Importing data to dashboard…');
+            LIVE = d; DATA = d; DATA.mode = 'live';
+            boot('live');
+            updateConnectProgress(100, 'Import completed!');
+            setConnectStatus('Connected. Live data is ready.', 'success');
+            setTimeout(closeConnect, 1200);
+            return true;
+          }
+        } catch (e) { console.warn('CDN fallback:', e); }
+      }
+
+      if (s.status === 'completed' && s.conclusion === 'failure') {
+        hideConnectProgress();
+        setConnectStatus('Scraper workflow failed. Check GitHub Actions logs.', 'error');
+        return false;
       }
     } catch (err) { console.warn('Polling:', err); }
   }
@@ -1100,8 +1121,9 @@ async function connectYoco() {
     const payload = await res.json().catch(() => ({}));
     if (!res.ok || !payload.ok) throw new Error(payload.error || 'Connect failed (' + res.status + ')');
     document.getElementById('yocoPassword').value = '';
-    setConnectStatus('Login saved. Scraper is running…');
-    startConnectProgress();
+    setConnectStatus('Login saved. Waiting for pipeline…');
+    showConnectProgress();
+    updateConnectProgress(2, 'Dispatching workflow…');
     await waitForLiveData(lastScrapedTime);
   } catch (err) {
     hideConnectProgress();
