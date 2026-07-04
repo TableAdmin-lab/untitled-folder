@@ -1740,72 +1740,224 @@ function clearFilters() {
    EXPORT REPORTS (XLSX & PDF)
    ============================================================ */
 function exportXLSX() {
-  const txns = DATA.transactions || [];
-  if (!txns.length) { alert('No transaction data to export.'); return; }
-  
-  const data = txns.map(t => ({
-    'Date': t.date,
-    'Time': t.time,
-    'Product Name': t.name || '',
-    'SKU': t.sku || '',
-    'Category': t.category || '',
-    'Brand': t.brand || '',
-    'Staff': t.staff || '',
-    'Status': t.status || '',
-    'Quantity': t.quantity || 0,
-    'Revenue (ZAR)': t.revenue || 0
-  }));
+  if (!DATA) { alert('No data to export.'); return; }
 
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Transactions");
-  
-  const maxW = {};
-  data.forEach(row => {
-    Object.keys(row).forEach(k => {
-      const v = String(row[k] || '');
-      maxW[k] = Math.max(maxW[k] || 10, v.length);
-    });
-  });
-  ws['!cols'] = Object.keys(maxW).map(k => ({ wch: maxW[k] + 2 }));
-
+  let ws, filename;
   const dateStr = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `pos-transactions-${dateStr}.xlsx`);
+
+  if (CURRENT_TAB === 'products') {
+    const products = DATA.topProducts || [];
+    let filtered = products;
+    if (productSearchQuery) {
+      const q = productSearchQuery.toLowerCase();
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(q));
+    }
+    
+    const sheetData = filtered.map((p, i) => ({
+      'Rank': i + 1,
+      'Product Name': p.name || '',
+      'Quantity Sold': p.quantity || 0,
+      'Total Revenue (ZAR)': p.revenue || 0
+    }));
+    
+    ws = XLSX.utils.json_to_sheet(sheetData);
+    filename = `products-report-${dateStr}.xlsx`;
+
+  } else if (CURRENT_TAB === 'categories') {
+    const cats = DATA.topCategories || [];
+    const totalRev = DATA.totals?.revenue || 1;
+    let filtered = cats;
+    if (categorySearchQuery) {
+      const q = categorySearchQuery.toLowerCase();
+      filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+    }
+
+    const sheetData = filtered.map((c, i) => ({
+      'Rank': i + 1,
+      'Category Name': c.name || '',
+      'Quantity Sold': c.quantity || 0,
+      'Total Revenue (ZAR)': c.revenue || 0,
+      'Sales Percentage (%)': parseFloat(((c.revenue || 0) / totalRev * 100).toFixed(1))
+    }));
+
+    ws = XLSX.utils.json_to_sheet(sheetData);
+    filename = `categories-report-${dateStr}.xlsx`;
+
+  } else if (CURRENT_TAB === 'staff') {
+    const staff = DATA.topStaff || [];
+    const sheetData = staff.map((s, i) => {
+      const avg = s.quantity ? (s.revenue / s.quantity) : 0;
+      return {
+        'Rank': i + 1,
+        'Staff Name': s.name || '',
+        'Transactions Count': s.quantity || 0,
+        'Total Revenue (ZAR)': s.revenue || 0,
+        'Average Ticket Value (ZAR)': Math.round(avg)
+      };
+    });
+
+    ws = XLSX.utils.json_to_sheet(sheetData);
+    filename = `staff-performance-${dateStr}.xlsx`;
+
+  } else {
+    const txns = DATA.transactions || [];
+    if (!txns.length) { alert('No transaction data to export.'); return; }
+    
+    const sheetData = txns.map(t => ({
+      'Date': t.date,
+      'Time': t.time,
+      'Product Name': t.name || '',
+      'SKU': t.sku || '',
+      'Category': t.category || '',
+      'Brand': t.brand || '',
+      'Staff': t.staff || '',
+      'Status': t.status || '',
+      'Quantity': t.quantity || 0,
+      'Revenue (ZAR)': t.revenue || 0
+    }));
+
+    ws = XLSX.utils.json_to_sheet(sheetData);
+    filename = `pos-transactions-${dateStr}.xlsx`;
+  }
+
+  // Auto-fit column widths
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  const maxW = {};
+  for (let C = range.s.c; C <= range.e.c; ++C) {
+    const address = XLSX.utils.encode_col(C) + '1';
+    const key = ws[address]?.v;
+    if (key) maxW[C] = String(key).length;
+  }
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const address = XLSX.utils.encode_cell({ r: R, c: C });
+      const cell = ws[address];
+      if (cell && cell.v) {
+        maxW[C] = Math.max(maxW[C] || 10, String(cell.v).length);
+      }
+    }
+  }
+  ws['!cols'] = Object.keys(maxW).map(cIdx => ({ wch: maxW[cIdx] + 2 }));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Report");
+  XLSX.writeFile(wb, filename);
 }
 
 function exportPDF() {
-  const txns = DATA.transactions || [];
-  if (!txns.length) { alert('No transaction data to export.'); return; }
-  
+  if (!DATA) { alert('No data to export.'); return; }
+
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('l', 'mm', 'a4');
+  const fileDate = new Date().toISOString().slice(0, 10);
+  const dateStr = new Date().toLocaleString('en-ZA');
+
+  let title, head, body, orientation = 'l', columnStyles = {};
+
+  if (CURRENT_TAB === 'products') {
+    orientation = 'p';
+    title = 'Products Sales Report';
+    
+    const products = DATA.topProducts || [];
+    let filtered = products;
+    if (productSearchQuery) {
+      const q = productSearchQuery.toLowerCase();
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(q));
+    }
+
+    head = [['Rank', 'Product Name', 'Quantity Sold', 'Total Revenue']];
+    body = filtered.map((p, i) => [
+      i + 1,
+      p.name || '',
+      (p.quantity || 0).toLocaleString('en-ZA'),
+      'R ' + Math.round(p.revenue || 0).toLocaleString('en-ZA')
+    ]);
+    columnStyles = {
+      1: { cellWidth: 100 }
+    };
+
+  } else if (CURRENT_TAB === 'categories') {
+    orientation = 'p';
+    title = 'Category Sales Report';
+
+    const cats = DATA.topCategories || [];
+    const totalRev = DATA.totals?.revenue || 1;
+    let filtered = cats;
+    if (categorySearchQuery) {
+      const q = categorySearchQuery.toLowerCase();
+      filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+    }
+
+    head = [['Rank', 'Category Name', 'Quantity Sold', 'Total Revenue', 'Sales Share']];
+    body = filtered.map((c, i) => [
+      i + 1,
+      c.name || '',
+      (c.quantity || 0).toLocaleString('en-ZA'),
+      'R ' + Math.round(c.revenue || 0).toLocaleString('en-ZA'),
+      ((c.revenue || 0) / totalRev * 100).toFixed(1) + '%'
+    ]);
+    columnStyles = {
+      1: { cellWidth: 80 }
+    };
+
+  } else if (CURRENT_TAB === 'staff') {
+    orientation = 'p';
+    title = 'Staff Performance Report';
+
+    const staff = DATA.topStaff || [];
+    head = [['Rank', 'Staff Name', 'Transactions Count', 'Total Revenue', 'Average Ticket']];
+    body = staff.map((s, i) => {
+      const avg = s.quantity ? (s.revenue / s.quantity) : 0;
+      return [
+        i + 1,
+        s.name || '',
+        (s.quantity || 0).toLocaleString('en-ZA'),
+        'R ' + Math.round(s.revenue || 0).toLocaleString('en-ZA'),
+        'R ' + Math.round(avg).toLocaleString('en-ZA')
+      ];
+    });
+    columnStyles = {
+      1: { cellWidth: 60 }
+    };
+
+  } else {
+    orientation = 'l';
+    title = 'POS Sales Transaction Report';
+
+    const txns = DATA.transactions || [];
+    if (!txns.length) { alert('No transaction data to export.'); return; }
+
+    head = [['Date', 'Time', 'Product Name', 'SKU', 'Category', 'Staff', 'Status', 'Qty', 'Revenue']];
+    body = txns.map(t => [
+      t.date,
+      t.time,
+      t.name || '',
+      t.sku || '',
+      t.category || '',
+      t.staff || '',
+      t.status || '',
+      t.quantity || 0,
+      'R ' + Math.round(t.revenue || 0).toLocaleString('en-ZA')
+    ]);
+    columnStyles = {
+      2: { cellWidth: 50 },
+      4: { cellWidth: 35 }
+    };
+  }
+
+  const doc = new jsPDF(orientation, 'mm', 'a4');
 
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(18);
   doc.setTextColor(30, 41, 59);
-  doc.text('POS Sales Transaction Report', 14, 20);
+  doc.text(title, 14, 20);
   
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
-  const dateStr = new Date().toLocaleString('en-ZA');
   doc.text(`Report generated on: ${dateStr}`, 14, 26);
   if (DATA.report) {
     doc.text(`Period: ${DATA.report.start} to ${DATA.report.end}`, 14, 31);
   }
-
-  const head = [['Date', 'Time', 'Product Name', 'SKU', 'Category', 'Staff', 'Status', 'Qty', 'Revenue']];
-  const body = txns.map(t => [
-    t.date,
-    t.time,
-    t.name || '',
-    t.sku || '',
-    t.category || '',
-    t.staff || '',
-    t.status || '',
-    t.quantity || 0,
-    'R ' + Math.round(t.revenue || 0).toLocaleString('en-ZA')
-  ]);
 
   doc.autoTable({
     startY: 36,
@@ -1813,11 +1965,8 @@ function exportPDF() {
     body: body,
     theme: 'striped',
     headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' },
-    styles: { fontSize: 8, cellPadding: 2 },
-    columnStyles: {
-      2: { cellWidth: 50 },
-      4: { cellWidth: 35 }
-    },
+    styles: { fontSize: 8, cellPadding: 2.5 },
+    columnStyles: columnStyles,
     didDrawPage: function (data) {
       const str = 'Page ' + doc.internal.getNumberOfPages();
       doc.setFontSize(9);
@@ -1826,8 +1975,8 @@ function exportPDF() {
     }
   });
 
-  const fileDate = new Date().toISOString().slice(0, 10);
-  doc.save(`pos-report-${fileDate}.pdf`);
+  const filenamePrefix = title.toLowerCase().replace(/\s+/g, '-');
+  doc.save(`${filenamePrefix}-${fileDate}.pdf`);
 }
 </script>
 </body>
