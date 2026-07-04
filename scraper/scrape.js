@@ -501,21 +501,23 @@ async function navigateToMonth(page, d) {
    the grid) carry an extra class. We use a fallback if the class changes. */
 async function clickDay(page, d) {
   const day = String(d.getUTCDate());
-  const targetMonth = MONTH_NAMES[d.getUTCMonth()];
   
-  // Locate the container holding this specific month's calendar sheet
-  const monthContainer = page.locator("div")
-    .filter({ has: page.locator("button[role=\"button\"]").filter({ hasText: new RegExp(`^${targetMonth}\\b`, "i") }) })
-    .last();
+  // Yoco's calendar day cells are represented as <button role="button"> with the day number
+  const cell = page.getByRole("button", { name: new RegExp(`^${day}$`) });
+  if (await cell.count()) {
+    await cell.click();
+    await page.waitForTimeout(400);
+    return;
+  }
 
-  // Try the original class name first inside the specific month container
-  const cell = monthContainer
+  // Fallback 1: Try the original div-based class selectors
+  const divCell = page
     .locator("div.r-1awozwy:not(.r-eu3ka)")
     .filter({ hasText: new RegExp(`^${day}$`) })
     .first();
     
-  if (await cell.count()) {
-    await cell.click();
+  if (await divCell.count()) {
+    await divCell.click();
     await page.waitForTimeout(400);
     return;
   }
@@ -526,8 +528,8 @@ async function clickDay(page, d) {
   });
 
   try {
-    // fallback if the class name ever changes
-    await monthContainer.getByText(day, { exact: true }).last().click();
+    // Fallback 2: getByText
+    await page.getByText(day, { exact: true }).last().click();
   } catch (e) {
     throw new Error(`clickDay: could not click ${ymd(d)} (${e.message})`);
   }
