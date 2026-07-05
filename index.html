@@ -3,7 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>POS Analytics — Retail Sales Dashboard</title>
+<script>
+{
+  const saved = localStorage.getItem('color-scheme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+    document.querySelector('meta[name="color-scheme"]').content = saved;
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.querySelector('meta[name="color-scheme"]').content = 'dark';
+  }
+}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
@@ -16,30 +29,30 @@
    DESIGN SYSTEM
    ============================================================ */
 :root {
-  --primary: #2563EB;
-  --primary-light: #DBEAFE;
-  --primary-dark: #1D4ED8;
-  --success: #16A34A;
-  --success-light: #DCFCE7;
-  --danger: #DC2626;
+  --primary: #E67E22;
+  --primary-light: #FEF5E7;
+  --primary-dark: #D35400;
+  --success: #10B981;
+  --success-light: #D1FAE5;
+  --danger: #EF4444;
   --danger-light: #FEE2E2;
   --warning: #F59E0B;
   --warning-light: #FEF3C7;
-  --purple: #7C3AED;
+  --purple: #8B5CF6;
   --purple-light: #EDE9FE;
-  --teal: #0D9488;
+  --teal: #14B8A6;
   --teal-light: #CCFBF1;
-  --bg: #F8FAFC;
+  --bg: #F5F6FA;
   --card: #FFFFFF;
-  --text: #0F172A;
-  --muted: #64748B;
-  --muted2: #94A3B8;
-  --border: #E2E8F0;
-  --border-light: #F1F5F9;
-  --sidebar-bg: #0F172A;
-  --sidebar-hover: #1E293B;
-  --sidebar-text: #94A3B8;
-  --sidebar-active: #2563EB;
+  --text: #1A1A2E;
+  --muted: #6B7280;
+  --muted2: #9CA3AF;
+  --border: #E5E7EB;
+  --border-light: #F3F4F6;
+  --sidebar-bg: #1A1A2E;
+  --sidebar-hover: #16213E;
+  --sidebar-text: #9CA3AF;
+  --sidebar-active: #E67E22;
   --radius: 16px;
   --radius-sm: 10px;
   --radius-xs: 8px;
@@ -48,7 +61,49 @@
   --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
   --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --chart-text: #1A1A2E;
+  --chart-muted: #6B7280;
+  --chart-border: #E5E7EB;
+  --chart-bar: #F6AD55;
+  --chart-bar-peak: #E67E22;
+  --loader-bg: rgba(245,246,250,0.92);
 }
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+[data-theme="dark"] {
+  --bg: #0F0F1A;
+  --card: #1A1A2E;
+  --text: #E8E8ED;
+  --muted: #8B8FA3;
+  --muted2: #6B7080;
+  --border: #2A2A3E;
+  --border-light: #1F1F32;
+  --primary-light: rgba(230,126,34,0.15);
+  --success-light: rgba(16,185,129,0.15);
+  --danger-light: rgba(239,68,68,0.15);
+  --warning-light: rgba(245,158,11,0.15);
+  --purple-light: rgba(139,92,246,0.15);
+  --teal-light: rgba(20,184,166,0.15);
+  --sidebar-bg: #0D0D1A;
+  --sidebar-hover: #1A1A2E;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.2);
+  --chart-text: #E8E8ED;
+  --chart-muted: #8B8FA3;
+  --chart-border: #2A2A3E;
+  --chart-bar: #F6AD55;
+  --chart-bar-peak: #E67E22;
+  --loader-bg: rgba(15,15,26,0.92);
+}
+[data-theme="dark"] .data-table tbody tr:hover { background: #16162A; }
+[data-theme="dark"] .rank-badge { background: #16162A; color: #8B8FA3; }
+[data-theme="dark"] .rank-badge.gold { background: rgba(245,158,11,0.18); color: #F59E0B; }
+[data-theme="dark"] .rank-badge.silver { background: rgba(139,92,246,0.14); color: #A78BFA; }
+[data-theme="dark"] .rank-badge.bronze { background: rgba(230,126,34,0.16); color: #E67E22; }
 
 /* ============================================================
    RESET & BASE
@@ -83,7 +138,7 @@ input { font: inherit; }
 }
 .logo-icon {
   width: 38px; height: 38px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary), #60A5FA);
+  background: linear-gradient(135deg, #E67E22, #F6AD55);
   display: grid; place-items: center; flex-shrink: 0;
 }
 .logo-icon svg { width: 20px; height: 20px; color: #fff; }
@@ -151,7 +206,7 @@ input { font: inherit; }
   box-shadow: var(--shadow); border: 1px solid var(--border-light);
   transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 14px;
 }
-.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,0.12), 0 4px 10px rgba(0,0,0,0.04); }
 .kpi-icon {
   width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0;
 }
@@ -282,7 +337,7 @@ input { font: inherit; }
    LOADING OVERLAY
    ============================================================ */
 .loader {
-  position: fixed; inset: 0; background: rgba(248,250,252,0.92); backdrop-filter: blur(10px);
+  position: fixed; inset: 0; background: var(--loader-bg); backdrop-filter: blur(10px);
   display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50;
 }
 .loader.show { display: flex; }
@@ -300,7 +355,7 @@ input { font: inherit; }
 .load-title { font-weight: 800; font-size: 17px; }
 .load-stage { font-size: 13px; color: var(--muted); margin-top: 3px; }
 .load-bar { height: 6px; background: var(--border-light); border-radius: 999px; overflow: hidden; }
-.load-bar span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), #60A5FA); border-radius: 999px; transition: width 0.3s ease; }
+.load-bar span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #E67E22, #F6AD55); border-radius: 999px; transition: width 0.3s ease; }
 .load-foot { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--muted2); }
 
 /* ============================================================
@@ -334,7 +389,7 @@ input { font: inherit; }
   width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
   padding: 11px 14px; font-size: 14px; color: var(--text); background: var(--card); transition: all 0.15s;
 }
-.field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+.field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(230,126,34,0.15); }
 .connect-status {
   display: none; margin-top: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   background: var(--bg); padding: 12px 14px; font-size: 13px; color: var(--muted); line-height: 1.5;
@@ -409,7 +464,40 @@ input { font: inherit; }
   padding: 8px 12px; font-size: 13px; color: var(--text); background: var(--card);
   transition: all 0.15s; width: 240px;
 }
-.search-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+.search-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(230,126,34,0.15); }
+
+/* ============================================================
+   DARK MODE TOGGLE
+   ============================================================ */
+.theme-toggle {
+  width: 36px; height: 36px; border-radius: var(--radius-xs); border: 1px solid var(--border);
+  background: var(--card); color: var(--muted); display: grid; place-items: center;
+  cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;
+}
+.theme-toggle:hover { background: var(--bg); border-color: var(--primary); color: var(--primary); }
+.theme-toggle svg { width: 18px; height: 18px; transition: transform 0.3s ease; }
+.theme-toggle:hover svg { transform: rotate(15deg); }
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon { display: none; }
+.theme-toggle .icon-sun { display: block; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+/* Category summary cards in right panel */
+.cat-summary-cards { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.cat-summary-card {
+  background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--radius-sm);
+  padding: 14px; display: flex; justify-content: space-between; align-items: center;
+}
+.cat-summary-label { font-size: 12px; font-weight: 500; color: var(--muted); }
+.cat-summary-value { font-size: 16px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* Date range badge */
+.date-range-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--primary); background: var(--primary-light); padding: 2px 8px;
+  border-radius: 4px; margin-right: 4px;
+}
 
 /* ============================================================
    RESPONSIVE
@@ -533,7 +621,6 @@ input { font: inherit; }
     </nav>
     <div class="sidebar-spacer"></div>
     <div class="sidebar-footer">
-      <a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><span>Help</span></a>
       <button class="nav-item" id="logoutBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></button>
     </div>
   </aside>
@@ -548,8 +635,13 @@ input { font: inherit; }
       <div class="header-right">
         <div class="header-date" id="headerDate">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="date-range-label" id="dateRangeLabel" style="display:none">Range Selected</span>
           <span id="dateRangeText">Loading…</span>
         </div>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
         <button class="btn" id="filterBtn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
           Filters
@@ -687,14 +779,37 @@ input { font: inherit; }
             </div>
             <div style="overflow-x:auto">
               <table class="data-table">
-                <thead><tr><th style="width:50px">#</th><th>Category Name</th><th class="right">Items Sold</th><th class="right">Total Revenue</th><th class="right">Revenue Share</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Menu</th>
+                    <th>Menu Category</th>
+                    <th class="right">Qty.</th>
+                    <th class="right">% Qty. of Total</th>
+                    <th class="right">Amount</th>
+                    <th class="right">% Amount of Total</th>
+                  </tr>
+                </thead>
                 <tbody id="tabCategoriesBody"></tbody>
               </table>
             </div>
           </div>
-          <div class="card fade-up" style="display:flex;flex-direction:column;justify-content:center">
+          <div class="card fade-up" style="display:flex;flex-direction:column">
             <div class="card-header"><h2>Category Share</h2></div>
             <div id="tabCategoryDonut" class="donut-container"></div>
+            <div class="cat-summary-cards" id="catSummaryCards">
+              <div class="cat-summary-card">
+                <span class="cat-summary-label">Total Revenue</span>
+                <span class="cat-summary-value" id="catSummaryRevenue">R0</span>
+              </div>
+              <div class="cat-summary-card">
+                <span class="cat-summary-label">Total Items Sold</span>
+                <span class="cat-summary-value" id="catSummaryItems">0</span>
+              </div>
+              <div class="cat-summary-card">
+                <span class="cat-summary-label">Top Category</span>
+                <span class="cat-summary-value" id="catSummaryTop" style="font-size:13px;font-weight:700;color:var(--primary)">—</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -881,11 +996,19 @@ input { font: inherit; }
    CONSTANTS & UTILITIES
    ============================================================ */
 const COLORS = {
-  primary:'#2563EB', success:'#16A34A', danger:'#DC2626', warning:'#F59E0B',
-  purple:'#7C3AED', teal:'#0D9488', pink:'#EC4899', indigo:'#6366F1',
-  text:'#0F172A', muted:'#64748B', border:'#E2E8F0'
+  get primary() { return getCSS('--primary') || '#E67E22'; },
+  get success() { return getCSS('--success') || '#10B981'; },
+  get danger() { return getCSS('--danger') || '#EF4444'; },
+  get warning() { return getCSS('--warning') || '#F59E0B'; },
+  get purple() { return getCSS('--purple') || '#8B5CF6'; },
+  get teal() { return getCSS('--teal') || '#14B8A6'; },
+  pink:'#EC4899', indigo:'#6366F1',
+  get text() { return getCSS('--chart-text') || '#1A1A2E'; },
+  get muted() { return getCSS('--chart-muted') || '#6B7280'; },
+  get border() { return getCSS('--chart-border') || '#E5E7EB'; }
 };
-const DONUT_COLORS = ['#2563EB','#16A34A','#F59E0B','#7C3AED','#EC4899','#0D9488','#6366F1','#F97316'];
+const DONUT_COLORS = ['#E67E22','#10B981','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#6366F1','#F97316'];
+function getCSS(prop) { return getComputedStyle(document.documentElement).getPropertyValue(prop).trim(); }
 const ZAR = n => 'R' + Math.abs(n).toLocaleString('en-ZA', {maximumFractionDigits:0});
 const fmtD = s => { try { return new Date(s.replace(/\//g,'-')+'T00:00').toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}); } catch { return s; } };
 const fmtShort = s => { try { return new Date(s.replace(/\//g,'-')+'T00:00').toLocaleDateString('en-ZA',{day:'numeric',month:'short'}); } catch { return s; } };
@@ -1194,31 +1317,177 @@ function renderProductsTab() {
   document.getElementById('nextProductPage').disabled = PRODUCTS_PAGE === totalPages;
 }
 
-function renderCategoriesTab() {
-  if (!DATA) return;
-  const cats = DATA.topCategories || [];
-  const totalRev = DATA.totals?.revenue || 1;
+function getCategoryHierarchy(yocoCategoryName) {
+  const cat = String(yocoCategoryName || 'Uncategorized').trim();
+  const upper = cat.toUpperCase();
   
-  let filtered = cats;
-  if (categorySearchQuery) {
-    const q = categorySearchQuery.toLowerCase();
-    filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+  let menu = 'Spirits'; // default
+  let subcat = cat;
+  
+  if (upper.includes('BEER') || upper.includes('LAGER') || upper.includes('STOUT') || 
+      upper.includes('AMSTEL') || upper.includes('CASTLE') || upper.includes('HEINEKEN') || 
+      upper.includes('WINDHOEK') || upper.includes('SOL') || upper.includes('CARLING') || 
+      upper.includes('SAB EMPTIES') || upper.includes('GUINNESS') || upper.includes('CORONA') ||
+      upper.includes('BUDWEISER') || upper.includes('MILLER') || upper.includes('STELLA') ||
+      upper.includes('HANSA') || upper.includes('TAFEL') || upper.includes('DRAUGHT')) {
+    menu = 'Beers';
+  } else if (upper.includes('CIDER') || upper.includes('RTD') || upper.includes('HUNTER') || 
+             upper.includes('SAVANNA') || upper.includes('BRUTAL') || upper.includes('BERNINI') || 
+             upper.includes('REDD') || upper.includes('STRONGBOW') || upper.includes('STORM') || 
+             upper.includes('CHILLER') || upper.includes('ESPRIT') || upper.includes('FLYING FISH') ||
+             upper.includes('BELGRAVIA COOLER') || upper.includes('SMIRNOFF STORM') || upper.includes('GUARANA') ||
+             upper.includes('PUNCH') || upper.includes('SPIN')) {
+    menu = 'Ciders & RTDs';
+  } else if (upper.includes('WINE') || upper.includes('SHERRY') || upper.includes('NAMAQUA') || 
+             upper.includes('DROSTDY') || upper.includes('FOURTH') || upper.includes('NEDERBURG') || 
+             upper.includes('SPIER') || upper.includes('ROBERTSON') || upper.includes('ROB ') || 
+             upper.includes('CHAMPAGNE') || upper.includes('J C LE ROUX') || upper.includes('PORT') ||
+             upper.includes('MERLOT') || upper.includes('PINOTAGE') || upper.includes('SAUVIGNON') ||
+             upper.includes('CABERNET') || upper.includes('SHIRAZ') || upper.includes('CHARDONNAY') ||
+             upper.includes('SWEET RED') || upper.includes('SWEET WHITE') || upper.includes('ROSE') ||
+             upper.includes('SPARKLING') || upper.includes('CRACKLING') || upper.includes('HARVEST') ||
+             upper.includes('CELLAR') || upper.includes('BOX WINE') || upper.includes('RAINDANCE')) {
+    menu = 'Wines & Sherries';
+  } else if (upper.includes('COKE') || upper.includes('SCHWEPPES') || upper.includes('LIQUI') || 
+             upper.includes('POWERADE') || upper.includes('RED BULL') || upper.includes('PET ') || 
+             upper.includes('MINERAL') || upper.includes('TONIC') || upper.includes('WATER') || 
+             upper.includes('SODA') || upper.includes('APPLETISER') || upper.includes('VALPRE') ||
+             upper.includes('MIXER') || upper.includes('JUICE') || upper.includes('SOFT DRINK') ||
+             upper.includes('PEPSI') || upper.includes('SPARLETTA') || upper.includes('CREAM SODA') ||
+             upper.includes('FANTA') || upper.includes('SPRITE') || upper.includes('GINGER ALE') ||
+             upper.includes('1L') || upper.includes('2L') || upper.includes('2.25L') || upper.includes('500ML')) {
+    menu = 'Mixers & Non-Alcoholic';
+  } else if (upper.includes('CIG') || upper.includes('TOBACCO') || upper.includes('CHIPS') || 
+             upper.includes('BAG') || upper.includes('GLASS') || upper.includes('TUMBLER') || 
+             upper.includes('LIGHTER') || upper.includes('MATCH') || upper.includes('SNACK') || 
+             upper.includes('RETAIL') || upper.includes('MISC') || upper.includes('SWEETS') ||
+             upper.includes('PEPPERMINT') || upper.includes('GRANDPA') || upper.includes('GRAND PA') ||
+             upper.includes('MEDICINE') || upper.includes('PANADO')) {
+    menu = 'Retail & Miscellaneous';
   }
   
-  const tbody = document.getElementById('tabCategoriesBody');
-  tbody.innerHTML = filtered.length ? filtered.map((c, i) => {
-    const pct = ((c.revenue || 0) / totalRev * 100).toFixed(1);
-    return `<tr>
-      <td><span class="rank-badge">${i + 1}</span></td>
-      <td style="font-weight:600">${esc(c.name)}</td>
-      <td class="right mono">${(c.quantity || 0).toLocaleString('en-ZA')}</td>
-      <td class="right mono" style="font-weight:700;color:var(--primary)">${ZAR(c.revenue || 0)}</td>
-      <td class="right mono" style="font-weight:600;color:var(--muted)">${pct}%</td>
-    </tr>`;
-  }).join('') : `<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted)">No categories found matching "${esc(categorySearchQuery)}"</td></tr>`;
+  return { menu, subcat };
+}
+
+function getGroupedCategories() {
+  const cats = DATA.topCategories || [];
+  const groups = {};
+  let grandTotalQty = 0;
+  let grandTotalRev = 0;
+
+  cats.forEach(c => {
+    const { menu, subcat } = getCategoryHierarchy(c.name);
+    if (!groups[menu]) {
+      groups[menu] = {
+        name: menu,
+        subcategories: {},
+        totalQty: 0,
+        totalRev: 0
+      };
+    }
+    if (!groups[menu].subcategories[subcat]) {
+      groups[menu].subcategories[subcat] = {
+        name: subcat,
+        quantity: 0,
+        revenue: 0
+      };
+    }
+    groups[menu].subcategories[subcat].quantity += c.quantity || 0;
+    groups[menu].subcategories[subcat].revenue += c.revenue || 0;
+    groups[menu].totalQty += c.quantity || 0;
+    groups[menu].totalRev += c.revenue || 0;
+    grandTotalQty += c.quantity || 0;
+    grandTotalRev += c.revenue || 0;
+  });
+
+  // Sort menus and subcategories
+  const sortedMenus = Object.values(groups).sort((a, b) => b.totalRev - a.totalRev);
+  sortedMenus.forEach(menu => {
+    menu.subcategories = Object.values(menu.subcategories).sort((a, b) => b.revenue - a.revenue);
+  });
+
+  return { menus: sortedMenus, grandTotalQty, grandTotalRev };
+}
+
+function renderCategoriesTab() {
+  if (!DATA) return;
   
-  if (cats.length) {
-    renderDonut('tabCategoryDonut', cats.map(c => ({ name: c.name, value: c.revenue || 0 })));
+  const { menus, grandTotalQty, grandTotalRev } = getGroupedCategories();
+  const tbody = document.getElementById('tabCategoriesBody');
+  
+  // Filter by categorySearchQuery if present
+  let filteredMenus = menus;
+  if (categorySearchQuery) {
+    const q = categorySearchQuery.toLowerCase();
+    filteredMenus = menus.map(m => {
+      const matchedSubs = m.subcategories.filter(s => s.name.toLowerCase().includes(q));
+      if (matchedSubs.length > 0) {
+        return {
+          ...m,
+          subcategories: matchedSubs,
+          totalQty: matchedSubs.reduce((sum, s) => sum + s.quantity, 0),
+          totalRev: matchedSubs.reduce((sum, s) => sum + s.revenue, 0)
+        };
+      }
+      return null;
+    }).filter(Boolean);
+  }
+
+  let html = '';
+  filteredMenus.forEach(m => {
+    // Menu Group Header Row
+    html += `<tr class="group-header-row" style="background:var(--border-light);font-weight:700">
+      <td colspan="2" style="padding:10px 12px;color:var(--primary)">${esc(m.name)}</td>
+      <td colspan="4"></td>
+    </tr>`;
+    
+    // Subcategories Detail Rows
+    m.subcategories.forEach(s => {
+      const qtyPct = m.totalQty ? ((s.quantity / m.totalQty) * 100).toFixed(1) : '0.0';
+      const revPct = m.totalRev ? ((s.revenue / m.totalRev) * 100).toFixed(1) : '0.0';
+      html += `<tr class="detail-row">
+        <td style="padding-left: 24px; color: var(--muted)">\u2014</td>
+        <td style="font-weight:500">${esc(s.name)}</td>
+        <td class="right mono">${s.quantity.toLocaleString('en-ZA')}</td>
+        <td class="right mono" style="color:var(--muted)">%${qtyPct}</td>
+        <td class="right mono" style="font-weight:600">${ZAR(s.revenue)}</td>
+        <td class="right mono" style="color:var(--muted)">%${revPct}</td>
+      </tr>`;
+    });
+    
+    // Menu Totals Row
+    const menuQtyPct = grandTotalQty ? ((m.totalQty / grandTotalQty) * 100).toFixed(1) : '0.0';
+    const menuRevPct = grandTotalRev ? ((m.totalRev / grandTotalRev) * 100).toFixed(1) : '0.0';
+    html += `<tr class="group-totals-row" style="border-bottom: 2px solid var(--border); font-weight:700">
+      <td colspan="2" style="padding-left:12px">${esc(m.name)} Totals</td>
+      <td class="right mono">${m.totalQty.toLocaleString('en-ZA')}</td>
+      <td class="right mono" style="color:var(--primary)">%${menuQtyPct}</td>
+      <td class="right mono">${ZAR(m.totalRev)}</td>
+      <td class="right mono" style="color:var(--primary)">%${menuRevPct}</td>
+    </tr>`;
+  });
+  
+  // Grand Totals Row (Site Totals)
+  if (filteredMenus.length > 0) {
+    html += `<tr class="grand-totals-row" style="background:var(--primary-light);font-weight:800;border-top:2px solid var(--primary)">
+      <td colspan="2" style="font-size:14px;color:var(--primary)">Site Totals</td>
+      <td class="right mono" style="font-size:14px">${grandTotalQty.toLocaleString('en-ZA')}</td>
+      <td class="right mono" style="color:var(--primary)">%100.0</td>
+      <td class="right mono" style="font-size:14px;color:var(--primary)">${ZAR(grandTotalRev)}</td>
+      <td class="right mono" style="color:var(--primary)">%100.0</td>
+    </tr>`;
+  } else {
+    html = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">No categories found matching "${esc(categorySearchQuery)}"</td></tr>`;
+  }
+  
+  tbody.innerHTML = html;
+  
+  // Update categories summary cards and donut chart
+  if (menus.length) {
+    renderDonut('tabCategoryDonut', menus.map(m => ({ name: m.name, value: m.totalRev })));
+    document.getElementById('catSummaryRevenue').textContent = ZAR(grandTotalRev);
+    document.getElementById('catSummaryItems').textContent = grandTotalQty.toLocaleString('en-ZA');
+    document.getElementById('catSummaryTop').textContent = menus[0]?.name || '—';
   } else {
     document.getElementById('tabCategoryDonut').innerHTML = '<div style="color:var(--muted);padding:24px;text-align:center">No category data</div>';
   }
@@ -1360,6 +1629,39 @@ function boot(mode) {
     });
 
     setWorkflowLink();
+
+    // Logout handler — clears state and returns to welcome screen
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      DATA = null; LIVE = null; MODE = 'empty';
+      PRODUCTS_EXPANDED = false; TXN_EXPANDED = false;
+      CURRENT_TAB = 'dashboard';
+      PRODUCTS_PAGE = 1;
+      productSearchQuery = '';
+      categorySearchQuery = '';
+      document.getElementById('emptyState').classList.add('show');
+      document.getElementById('app').classList.add('hidden');
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => btn.classList.remove('active'));
+      document.querySelector('.sidebar-nav .nav-item[data-tab="dashboard"]').classList.add('active');
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.toggle('hidden', v.id !== 'view-dashboard'));
+      document.getElementById('yocoEmail').value = '';
+      document.getElementById('yocoPassword').value = '';
+    });
+
+    // Dark mode toggle
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      document.querySelector('meta[name="color-scheme"]').content = newTheme;
+      localStorage.setItem('color-scheme', newTheme);
+      // Re-render charts to pick up new CSS variable colors
+      if (MODE !== 'empty' && DATA) {
+        if (CURRENT_TAB === 'dashboard') render();
+        else if (CURRENT_TAB === 'categories') renderCategoriesTab();
+      }
+    });
+
     BOOTED = true;
   }
 
@@ -1373,7 +1675,7 @@ function boot(mode) {
   setTimeout(hideProgress, 300);
 }
 
-boot('empty');
+initData();
 
 /* ============================================================
    RENDER ORCHESTRATOR
@@ -1381,9 +1683,10 @@ boot('empty');
 function render() {
   if (MODE === 'empty' || !DATA) return;
 
-  // Header
+  // Header date range
   if (DATA.report) {
-    document.getElementById('dateRangeText').textContent = fmtShort(DATA.report.start) + ' - ' + fmtShort(DATA.report.end);
+    document.getElementById('dateRangeLabel').style.display = 'inline';
+    document.getElementById('dateRangeText').textContent = fmtShort(DATA.report.start) + ' \u2013 ' + fmtShort(DATA.report.end);
   } else {
     document.getElementById('dateRangeText').textContent = new Date().toLocaleDateString('en-ZA', {day:'numeric',month:'short',year:'numeric'});
   }
@@ -1764,24 +2067,65 @@ function exportXLSX() {
     filename = `products-report-${dateStr}.xlsx`;
 
   } else if (CURRENT_TAB === 'categories') {
-    const cats = DATA.topCategories || [];
-    const totalRev = DATA.totals?.revenue || 1;
-    let filtered = cats;
+    const { menus, grandTotalQty, grandTotalRev } = getGroupedCategories();
+    
+    let filteredMenus = menus;
     if (categorySearchQuery) {
       const q = categorySearchQuery.toLowerCase();
-      filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+      filteredMenus = menus.map(m => {
+        const matchedSubs = m.subcategories.filter(s => s.name.toLowerCase().includes(q));
+        if (matchedSubs.length > 0) {
+          return {
+            ...m,
+            subcategories: matchedSubs,
+            totalQty: matchedSubs.reduce((sum, s) => sum + s.quantity, 0),
+            totalRev: matchedSubs.reduce((sum, s) => sum + s.revenue, 0)
+          };
+        }
+        return null;
+      }).filter(Boolean);
     }
 
-    const sheetData = filtered.map((c, i) => ({
-      'Rank': i + 1,
-      'Category Name': c.name || '',
-      'Quantity Sold': c.quantity || 0,
-      'Total Revenue (ZAR)': c.revenue || 0,
-      'Sales Percentage (%)': parseFloat(((c.revenue || 0) / totalRev * 100).toFixed(1))
-    }));
+    const sheetData = [];
+    filteredMenus.forEach(m => {
+      m.subcategories.forEach(s => {
+        const qtyPct = m.totalQty ? ((s.quantity / m.totalQty) * 100).toFixed(2) + '%' : '0.00%';
+        const revPct = m.totalRev ? ((s.revenue / m.totalRev) * 100).toFixed(2) + '%' : '0.00%';
+        sheetData.push({
+          'Menu': m.name,
+          'Menu Category': s.name,
+          'Qty.': s.quantity,
+          '% Qty. of Total': qtyPct,
+          'Amount': s.revenue,
+          '% Amount of Total': revPct
+        });
+      });
+      
+      const menuQtyPct = grandTotalQty ? ((m.totalQty / grandTotalQty) * 100).toFixed(2) + '%' : '0.00%';
+      const menuRevPct = grandTotalRev ? ((m.totalRev / grandTotalRev) * 100).toFixed(2) + '%' : '0.00%';
+      sheetData.push({
+        'Menu': m.name + ' Totals',
+        'Menu Category': '',
+        'Qty.': m.totalQty,
+        '% Qty. of Total': menuQtyPct,
+        'Amount': m.totalRev,
+        '% Amount of Total': menuRevPct
+      });
+    });
+
+    if (filteredMenus.length > 0) {
+      sheetData.push({
+        'Menu': 'Site Totals',
+        'Menu Category': '',
+        'Qty.': grandTotalQty,
+        '% Qty. of Total': '100.00%',
+        'Amount': grandTotalRev,
+        '% Amount of Total': '100.00%'
+      });
+    }
 
     ws = XLSX.utils.json_to_sheet(sheetData);
-    filename = `categories-report-${dateStr}.xlsx`;
+    filename = `category-sales-report-${dateStr}.xlsx`;
 
   } else if (CURRENT_TAB === 'staff') {
     const staff = DATA.topStaff || [];
@@ -1879,24 +2223,71 @@ function exportPDF() {
     orientation = 'p';
     title = 'Category Sales Report';
 
-    const cats = DATA.topCategories || [];
-    const totalRev = DATA.totals?.revenue || 1;
-    let filtered = cats;
+    const { menus, grandTotalQty, grandTotalRev } = getGroupedCategories();
+    
+    let filteredMenus = menus;
     if (categorySearchQuery) {
       const q = categorySearchQuery.toLowerCase();
-      filtered = filtered.filter(c => c.name.toLowerCase().includes(q));
+      filteredMenus = menus.map(m => {
+        const matchedSubs = m.subcategories.filter(s => s.name.toLowerCase().includes(q));
+        if (matchedSubs.length > 0) {
+          return {
+            ...m,
+            subcategories: matchedSubs,
+            totalQty: matchedSubs.reduce((sum, s) => sum + s.quantity, 0),
+            totalRev: matchedSubs.reduce((sum, s) => sum + s.revenue, 0)
+          };
+        }
+        return null;
+      }).filter(Boolean);
     }
 
-    head = [['Rank', 'Category Name', 'Quantity Sold', 'Total Revenue', 'Sales Share']];
-    body = filtered.map((c, i) => [
-      i + 1,
-      c.name || '',
-      (c.quantity || 0).toLocaleString('en-ZA'),
-      'R ' + Math.round(c.revenue || 0).toLocaleString('en-ZA'),
-      ((c.revenue || 0) / totalRev * 100).toFixed(1) + '%'
-    ]);
+    head = [['Menu', 'Menu Category', 'Qty.', '% Qty. of Total', 'Amount', '% Amount of Total']];
+    body = [];
+
+    filteredMenus.forEach(m => {
+      m.subcategories.forEach(s => {
+        const qtyPct = m.totalQty ? ((s.quantity / m.totalQty) * 100).toFixed(1) + '%' : '0.0%';
+        const revPct = m.totalRev ? ((s.revenue / m.totalRev) * 100).toFixed(1) + '%' : '0.0%';
+        body.push([
+          m.name,
+          s.name,
+          s.quantity.toLocaleString('en-ZA'),
+          qtyPct,
+          'R ' + Math.round(s.revenue).toLocaleString('en-ZA'),
+          revPct
+        ]);
+      });
+
+      const menuQtyPct = grandTotalQty ? ((m.totalQty / grandTotalQty) * 100).toFixed(1) + '%' : '0.0%';
+      const menuRevPct = grandTotalRev ? ((m.totalRev / grandTotalRev) * 100).toFixed(1) + '%' : '0.0%';
+      body.push([
+        m.name + ' Totals',
+        '',
+        m.totalQty.toLocaleString('en-ZA'),
+        menuQtyPct,
+        'R ' + Math.round(m.totalRev).toLocaleString('en-ZA'),
+        menuRevPct
+      ]);
+    });
+
+    if (filteredMenus.length > 0) {
+      body.push([
+        'Site Totals',
+        '',
+        grandTotalQty.toLocaleString('en-ZA'),
+        '100.0%',
+        'R ' + Math.round(grandTotalRev).toLocaleString('en-ZA'),
+        '100.0%'
+      ]);
+    }
+
     columnStyles = {
-      1: { cellWidth: 80 }
+      0: { fontStyle: 'bold' },
+      2: { halign: 'right' },
+      3: { halign: 'right' },
+      4: { halign: 'right' },
+      5: { halign: 'right' }
     };
 
   } else if (CURRENT_TAB === 'staff') {
@@ -1964,7 +2355,7 @@ function exportPDF() {
     head: head,
     body: body,
     theme: 'striped',
-    headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' },
+    headStyles: { fillColor: [230, 126, 34], textColor: [255, 255, 255], fontStyle: 'bold' },
     styles: { fontSize: 8, cellPadding: 2.5 },
     columnStyles: columnStyles,
     didDrawPage: function (data) {

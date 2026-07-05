@@ -86,8 +86,12 @@ export function reportWindow(today = sastToday(), mode = "auto", customStart = n
 
 /* ---------------- scraping ---------------- */
 
-const shot = (page, name) =>
-  page.screenshot({ path: join(DEBUG_DIR, `${name}.png`), fullPage: true }).catch(() => {});
+const shot = (page, name) => {
+  if (!process.env.DEBUG_SCRAPER && !String(name).startsWith("99") && !String(name).includes("failed") && !String(name).includes("error")) {
+    return Promise.resolve();
+  }
+  return page.screenshot({ path: join(DEBUG_DIR, `${name}.png`), fullPage: true }).catch(() => {});
+};
 
 const clip = (s = "", n = TEXT_LIMIT) => {
   const clean = String(s).replace(/\s+/g, " ").trim();
@@ -98,6 +102,9 @@ const fileSafe = (s) => String(s).replace(/[^a-z0-9._-]+/gi, "-").replace(/^-|-$
 const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 async function debugPage(page, name, extra = {}) {
+  if (!process.env.DEBUG_SCRAPER && !String(name).startsWith("99") && !String(name).includes("failed") && !String(name).includes("error")) {
+    return;
+  }
   const safeName = fileSafe(name);
   await shot(page, safeName);
 
@@ -277,7 +284,8 @@ async function main() {
   try {
     /* ---- 1. login ---- */
     console.log("Logging in…");
-    await page.goto("https://app.yoco.com/login/existing", { waitUntil: "networkidle" });
+    await page.goto("https://app.yoco.com/login/existing", { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('input[type="email"], input[autocomplete*="email"], input[name="email"]', { timeout: 20_000 });
     await shot(page, "01-login");
     await page.fill('input[type="email"], input[autocomplete*="email"], input[name="email"]', EMAIL);
     // Some flows reveal the password field after the email step.
@@ -302,17 +310,18 @@ async function main() {
     // range entirely through the on-page UI instead.
     const reportUrl = "https://app.yoco.com/reports/products/home";
     console.log("Opening report:", reportUrl);
-    await page.goto(reportUrl, { waitUntil: "networkidle" });
-    await page.waitForTimeout(5_000);
-    await debugPage(page, "04-report", { phase: "report-loaded" });
+    await page.goto(reportUrl, { waitUntil: "domcontentloaded" });
 
-    // Yoco occasionally shows a transient "can't connect" screen — reload once.
+    // Check if we got a transient connectivity error screen
+    await page.waitForTimeout(2000);
     if (/can'?t connect/i.test(await page.textContent("body"))) {
       console.warn("Got a connectivity error screen — reloading once.");
-      await page.reload({ waitUntil: "networkidle" });
-      await page.waitForTimeout(5_000);
-      await debugPage(page, "04b-report-retry", { phase: "report-reloaded" });
+      await page.reload({ waitUntil: "domcontentloaded" });
     }
+
+    // Wait for the key button to be visible to ensure SPA has finished rendering
+    await page.getByRole("button", { name: "Custom range", exact: true }).waitFor({ state: "visible", timeout: 30_000 });
+    await debugPage(page, "04-report", { phase: "report-loaded" });
 
     await setDateRangeViaUi(page, start, end).catch(async (e) => {
       console.warn("Date-selector UI did not complete:", e.message);
@@ -333,7 +342,7 @@ async function main() {
 
     // Applying the custom range triggers a report data reload (visible as
     // spinners on the page) during which "Export" is briefly not rendered.
-    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.waitForLoadState("load").catch(() => {});
     await page.waitForTimeout(2_000);
 
     /* ---- 3. download → Excel ---- */
