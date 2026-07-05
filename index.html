@@ -29,9 +29,9 @@
    DESIGN SYSTEM
    ============================================================ */
 :root {
-  --primary: #E67E22;
-  --primary-light: #FEF5E7;
-  --primary-dark: #D35400;
+  --primary: #00A9E0;
+  --primary-light: #E0F2FE;
+  --primary-dark: #0082C3;
   --success: #10B981;
   --success-light: #D1FAE5;
   --danger: #EF4444;
@@ -49,10 +49,10 @@
   --muted2: #9CA3AF;
   --border: #E5E7EB;
   --border-light: #F3F4F6;
-  --sidebar-bg: #1A1A2E;
-  --sidebar-hover: #16213E;
+  --sidebar-bg: #0D1B2A;
+  --sidebar-hover: #152535;
   --sidebar-text: #9CA3AF;
-  --sidebar-active: #E67E22;
+  --sidebar-active: #00A9E0;
   --radius: 16px;
   --radius-sm: 10px;
   --radius-xs: 8px;
@@ -64,8 +64,8 @@
   --chart-text: #1A1A2E;
   --chart-muted: #6B7280;
   --chart-border: #E5E7EB;
-  --chart-bar: #F6AD55;
-  --chart-bar-peak: #E67E22;
+  --chart-bar: #7DD3FC;
+  --chart-bar-peak: #00A9E0;
   --loader-bg: rgba(245,246,250,0.92);
 }
 
@@ -80,14 +80,14 @@
   --muted2: #6B7080;
   --border: #2A2A3E;
   --border-light: #1F1F32;
-  --primary-light: rgba(230,126,34,0.15);
+  --primary-light: rgba(0, 169, 224, 0.15);
   --success-light: rgba(16,185,129,0.15);
   --danger-light: rgba(239,68,68,0.15);
   --warning-light: rgba(245,158,11,0.15);
   --purple-light: rgba(139,92,246,0.15);
   --teal-light: rgba(20,184,166,0.15);
-  --sidebar-bg: #0D0D1A;
-  --sidebar-hover: #1A1A2E;
+  --sidebar-bg: #060E17;
+  --sidebar-hover: #0F1D2C;
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
   --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
@@ -95,15 +95,15 @@
   --chart-text: #E8E8ED;
   --chart-muted: #8B8FA3;
   --chart-border: #2A2A3E;
-  --chart-bar: #F6AD55;
-  --chart-bar-peak: #E67E22;
+  --chart-bar: #38BDF8;
+  --chart-bar-peak: #00A9E0;
   --loader-bg: rgba(15,15,26,0.92);
 }
 [data-theme="dark"] .data-table tbody tr:hover { background: #16162A; }
 [data-theme="dark"] .rank-badge { background: #16162A; color: #8B8FA3; }
 [data-theme="dark"] .rank-badge.gold { background: rgba(245,158,11,0.18); color: #F59E0B; }
 [data-theme="dark"] .rank-badge.silver { background: rgba(139,92,246,0.14); color: #A78BFA; }
-[data-theme="dark"] .rank-badge.bronze { background: rgba(230,126,34,0.16); color: #E67E22; }
+[data-theme="dark"] .rank-badge.bronze { background: rgba(0, 169, 224, 0.16); color: #00A9E0; }
 
 /* ============================================================
    RESET & BASE
@@ -138,7 +138,7 @@ input { font: inherit; }
 }
 .logo-icon {
   width: 38px; height: 38px; border-radius: 10px;
-  background: linear-gradient(135deg, #E67E22, #F6AD55);
+  background: linear-gradient(135deg, #00A9E0, #7DD3FC);
   display: grid; place-items: center; flex-shrink: 0;
 }
 .logo-icon svg { width: 20px; height: 20px; color: #fff; }
@@ -355,7 +355,7 @@ input { font: inherit; }
 .load-title { font-weight: 800; font-size: 17px; }
 .load-stage { font-size: 13px; color: var(--muted); margin-top: 3px; }
 .load-bar { height: 6px; background: var(--border-light); border-radius: 999px; overflow: hidden; }
-.load-bar span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #E67E22, #F6AD55); border-radius: 999px; transition: width 0.3s ease; }
+.load-bar span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #00A9E0, #7DD3FC); border-radius: 999px; transition: width 0.3s ease; }
 .load-foot { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--muted2); }
 
 /* ============================================================
@@ -996,7 +996,7 @@ input { font: inherit; }
    CONSTANTS & UTILITIES
    ============================================================ */
 const COLORS = {
-  get primary() { return getCSS('--primary') || '#E67E22'; },
+  get primary() { return getCSS('--primary') || '#00A9E0'; },
   get success() { return getCSS('--success') || '#10B981'; },
   get danger() { return getCSS('--danger') || '#EF4444'; },
   get warning() { return getCSS('--warning') || '#F59E0B'; },
@@ -1007,7 +1007,7 @@ const COLORS = {
   get muted() { return getCSS('--chart-muted') || '#6B7280'; },
   get border() { return getCSS('--chart-border') || '#E5E7EB'; }
 };
-const DONUT_COLORS = ['#E67E22','#10B981','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#6366F1','#F97316'];
+const DONUT_COLORS = ['#00A9E0','#10B981','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#6366F1','#F97316'];
 function getCSS(prop) { return getComputedStyle(document.documentElement).getPropertyValue(prop).trim(); }
 const ZAR = n => 'R' + Math.abs(n).toLocaleString('en-ZA', {maximumFractionDigits:0});
 const fmtD = s => { try { return new Date(s.replace(/\//g,'-')+'T00:00').toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}); } catch { return s; } };
@@ -2220,32 +2220,229 @@ function exportPDF() {
     };
 
   } else if (CURRENT_TAB === 'categories') {
-    orientation = 'p';
-    title = 'Category Sales Report';
-
-    const { menus, grandTotalQty, grandTotalRev } = getGroupedCategories();
+    const doc = new jsPDF('p', 'mm', 'a4');
     
-    let filteredMenus = menus;
-    if (categorySearchQuery) {
-      const q = categorySearchQuery.toLowerCase();
-      filteredMenus = menus.map(m => {
-        const matchedSubs = m.subcategories.filter(s => s.name.toLowerCase().includes(q));
-        if (matchedSubs.length > 0) {
-          return {
-            ...m,
-            subcategories: matchedSubs,
-            totalQty: matchedSubs.reduce((sum, s) => sum + s.quantity, 0),
-            totalRev: matchedSubs.reduce((sum, s) => sum + s.revenue, 0)
-          };
-        }
-        return null;
-      }).filter(Boolean);
+    // Yoco Cerulean branding colors
+    const PRIMARY_BLUE = [0, 169, 224]; // #00A9E0
+    const TEXT_DARK = [26, 26, 46];
+    const MUTED_GREY = [107, 114, 128];
+    const BORDER_LIGHT = [229, 231, 235];
+    const CARD_BLUE_BG = [224, 242, 254]; // #E0F2FE
+    const CARD_BLUE_TXT = [3, 105, 161]; // #0369A1
+    const CARD_AMBER_BG = [254, 243, 199]; // #FEF3C7
+    const CARD_AMBER_TXT = [180, 83, 9]; // #B45309
+
+    // SAST Date Format
+    const dateStr = DATA.report ? `${DATA.report.start.replace(/-/g, '/')} \u2013 ${DATA.report.end.replace(/-/g, '/')}` : new Date().toLocaleDateString('en-ZA');
+    
+    // Grouped categories mapping
+    const { menus, grandTotalQty, grandTotalRev } = getGroupedCategories();
+    const categoriesCount = DATA.topCategories ? DATA.topCategories.length : 0;
+    
+    // Helper to format SA currency (e.g. 151 100.00)
+    const formatSA = (num) => {
+      const parts = Number(num).toFixed(2).split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      return parts.join('.');
+    };
+
+    // Find top earning
+    const topEarning = DATA.topCategories && DATA.topCategories.length > 0 ? DATA.topCategories[0] : null;
+    const topEarningName = topEarning ? topEarning.name : 'N/A';
+    const topEarningRev = topEarning ? topEarning.revenue : 0;
+    const topEarningQty = topEarning ? topEarning.quantity : 0;
+    const topEarningPct = grandTotalRev ? ((topEarningRev / grandTotalRev) * 100).toFixed(1) : '0.0';
+    
+    // Find top selling (highest volume / quantity)
+    let topSelling = null;
+    if (DATA.topCategories && DATA.topCategories.length > 0) {
+      topSelling = [...DATA.topCategories].sort((a, b) => b.quantity - a.quantity)[0];
     }
+    const topSellingName = topSelling ? topSelling.name : 'N/A';
+    const topSellingQty = topSelling ? topSelling.quantity : 0;
+    const topSellingRev = topSelling ? topSelling.revenue : 0;
 
-    head = [['Menu', 'Menu Category', 'Qty.', '% Qty. of Total', 'Amount', '% Amount of Total']];
-    body = [];
+    // --- DRAW HEADER ---
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(PRIMARY_BLUE[0], PRIMARY_BLUE[1], PRIMARY_BLUE[2]);
+    doc.text('ITEM SALES \u00B7 CATEGORY SUMMARY', 14, 15);
+    
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.text('Category Sales Report', 14, 24);
+    
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(MUTED_GREY[0], MUTED_GREY[1], MUTED_GREY[2]);
+    doc.text('A complete breakdown of every category sold over the reporting period.', 14, 30);
+    
+    // YOCO Logo text (Right Aligned)
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(PRIMARY_BLUE[0], PRIMARY_BLUE[1], PRIMARY_BLUE[2]);
+    doc.text('YOCO', 196, 21, { align: 'right' });
+    
+    // Date Range (Right Aligned under Logo)
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(MUTED_GREY[0], MUTED_GREY[1], MUTED_GREY[2]);
+    doc.text(dateStr, 196, 27, { align: 'right' });
+    
+    // --- DRAW 3 TOP CARDS ---
+    const drawCard = (x, y, w, h, title, valueStr) => {
+      doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+      doc.setLineWidth(0.3);
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(x, y, w, h, 3, 3, 'FD');
+      
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(MUTED_GREY[0], MUTED_GREY[1], MUTED_GREY[2]);
+      doc.text(title, x + 5, y + 6);
+      
+      doc.setFont('Helvetica', 'bold');
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      if (valueStr.includes('.')) {
+        const parts = valueStr.split('.');
+        doc.setFontSize(15);
+        doc.text(parts[0], x + 5, y + 14);
+        const intWidth = doc.getTextWidth(parts[0]);
+        doc.setFontSize(10);
+        doc.setTextColor(MUTED_GREY[0], MUTED_GREY[1], MUTED_GREY[2]);
+        doc.text('.' + parts[1], x + 5 + intWidth, y + 14);
+      } else {
+        doc.setFontSize(15);
+        doc.text(valueStr, x + 5, y + 14);
+      }
+    };
+    
+    const cardWidth = 58;
+    const cardHeight = 18;
+    drawCard(14, 35, cardWidth, cardHeight, 'GROSS SALES', 'R' + formatSA(grandTotalRev));
+    drawCard(76, 35, cardWidth, cardHeight, 'UNITS SOLD', grandTotalQty.toLocaleString('en-ZA'));
+    drawCard(138, 35, cardWidth, cardHeight, 'CATEGORIES SOLD', categoriesCount.toLocaleString('en-ZA'));
 
-    filteredMenus.forEach(m => {
+    // --- DRAW 2 BOTTOM CARDS ---
+    const drawEarningCard = (x, y, w, h, catName, revVal, qtyVal, pctVal) => {
+      doc.setFillColor(CARD_BLUE_BG[0], CARD_BLUE_BG[1], CARD_BLUE_BG[2]);
+      doc.roundedRect(x, y, w, h, 3, 3, 'F');
+      
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(CARD_BLUE_TXT[0], CARD_BLUE_TXT[1], CARD_BLUE_TXT[2]);
+      doc.text('TOP EARNING CATEGORY', x + 5, y + 6);
+      
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      doc.text(catName, x + 5, y + 12);
+      
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(PRIMARY_BLUE[0], PRIMARY_BLUE[1], PRIMARY_BLUE[2]);
+      const revText = 'R ' + formatSA(revVal);
+      doc.text(revText, x + 5, y + 18);
+      
+      const revTextWidth = doc.getTextWidth(revText);
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(CARD_BLUE_TXT[0], CARD_BLUE_TXT[1], CARD_BLUE_TXT[2]);
+      doc.text(`${pctVal}% of gross \u00B7 ${qtyVal} units`, x + 5 + revTextWidth + 3, y + 17.5);
+    };
+
+    const drawSellingCard = (x, y, w, h, catName, qtyVal, revVal) => {
+      doc.setFillColor(CARD_AMBER_BG[0], CARD_AMBER_BG[1], CARD_AMBER_BG[2]);
+      doc.roundedRect(x, y, w, h, 3, 3, 'F');
+      
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(CARD_AMBER_TXT[0], CARD_AMBER_TXT[1], CARD_AMBER_TXT[2]);
+      doc.text('TOP SELLING CATEGORY', x + 5, y + 6);
+      
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      doc.text(catName, x + 5, y + 12);
+      
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(CARD_AMBER_TXT[0], CARD_AMBER_TXT[1], CARD_AMBER_TXT[2]);
+      const qtyText = qtyVal.toLocaleString('en-ZA') + ' units';
+      doc.text(qtyText, x + 5, y + 18);
+      
+      const qtyTextWidth = doc.getTextWidth(qtyText);
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(CARD_AMBER_TXT[0], CARD_AMBER_TXT[1], CARD_AMBER_TXT[2]);
+      doc.text(`highest volume \u00B7 R ${formatSA(revVal)}`, x + 5 + qtyTextWidth + 3, y + 17.5);
+    };
+
+    const doubleCardWidth = 89;
+    const doubleCardHeight = 22;
+    drawEarningCard(14, 57, doubleCardWidth, doubleCardHeight, topEarningName, topEarningRev, topEarningQty, topEarningPct);
+    drawSellingCard(107, 57, doubleCardWidth, doubleCardHeight, topSellingName, topSellingQty, topSellingRev);
+
+    // --- DRAW CHART: TOP 15 CATEGORIES ---
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.text('Top 15 categories by revenue', 14, 88);
+    
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(MUTED_GREY[0], MUTED_GREY[1], MUTED_GREY[2]);
+    doc.text('R value', 196, 88, { align: 'right' });
+
+    const top15 = (DATA.topCategories || []).slice(0, 15);
+    const maxRev = top15.length > 0 ? top15[0].revenue : 1;
+    
+    let chartY = 92;
+    top15.forEach((c, idx) => {
+      const rowY = chartY + idx * 5.2;
+      
+      // Category Name
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      const truncatedName = c.name.length > 28 ? c.name.slice(0, 26) + '...' : c.name;
+      doc.text(truncatedName, 14, rowY + 3.2);
+      
+      // Bar background track
+      doc.setFillColor(243, 244, 246);
+      doc.roundedRect(68, rowY, 100, 3.2, 1.6, 1.6, 'F');
+      
+      // Bar fill (Cerulean blue)
+      const fillWidth = maxRev ? (c.revenue / maxRev) * 100 : 0;
+      if (fillWidth > 1) {
+        doc.setFillColor(PRIMARY_BLUE[0], PRIMARY_BLUE[1], PRIMARY_BLUE[2]);
+        doc.roundedRect(68, rowY, fillWidth, 3.2, 1.6, 1.6, 'F');
+      }
+      
+      // R Value
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      doc.text('R' + formatSA(c.revenue), 196, rowY + 3.2, { align: 'right' });
+    });
+
+    // --- DRAW ALL CATEGORIES TABLE ---
+    const tableStartY = chartY + (top15.length * 5.2) + 6;
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.text('All categories', 14, tableStartY);
+    
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(MUTED_GREY[0], MUTED_GREY[1], MUTED_GREY[2]);
+    doc.text('Every category sold, ranked by revenue.', 14, tableStartY + 4.5);
+
+    const head = [['Menu', 'Menu Category', 'Qty.', '% Qty. of Total', 'Amount', '% Amount of Total']];
+    const body = [];
+    
+    menus.forEach(m => {
       m.subcategories.forEach(s => {
         const qtyPct = m.totalQty ? ((s.quantity / m.totalQty) * 100).toFixed(1) + '%' : '0.0%';
         const revPct = m.totalRev ? ((s.revenue / m.totalRev) * 100).toFixed(1) + '%' : '0.0%';
@@ -2254,7 +2451,7 @@ function exportPDF() {
           s.name,
           s.quantity.toLocaleString('en-ZA'),
           qtyPct,
-          'R ' + Math.round(s.revenue).toLocaleString('en-ZA'),
+          'R ' + formatSA(s.revenue),
           revPct
         ]);
       });
@@ -2266,29 +2463,47 @@ function exportPDF() {
         '',
         m.totalQty.toLocaleString('en-ZA'),
         menuQtyPct,
-        'R ' + Math.round(m.totalRev).toLocaleString('en-ZA'),
+        'R ' + formatSA(m.totalRev),
         menuRevPct
       ]);
     });
 
-    if (filteredMenus.length > 0) {
+    if (menus.length > 0) {
       body.push([
         'Site Totals',
         '',
         grandTotalQty.toLocaleString('en-ZA'),
         '100.0%',
-        'R ' + Math.round(grandTotalRev).toLocaleString('en-ZA'),
+        'R ' + formatSA(grandTotalRev),
         '100.0%'
       ]);
     }
 
-    columnStyles = {
-      0: { fontStyle: 'bold' },
-      2: { halign: 'right' },
-      3: { halign: 'right' },
-      4: { halign: 'right' },
-      5: { halign: 'right' }
-    };
+    doc.autoTable({
+      startY: tableStartY + 7,
+      head: head,
+      body: body,
+      theme: 'striped',
+      headStyles: { fillColor: PRIMARY_BLUE, textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 8, cellPadding: 2.2 },
+      columnStyles: {
+        0: { fontStyle: 'bold' },
+        2: { halign: 'right' },
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+        5: { halign: 'right' }
+      },
+      didDrawPage: function (data) {
+        const str = 'Page ' + doc.internal.getNumberOfPages();
+        doc.setFontSize(8.5);
+        doc.setTextColor(MUTED_GREY[0], MUTED_GREY[1], MUTED_GREY[2]);
+        doc.text(str, doc.internal.pageSize.width - 20, doc.internal.pageSize.height - 10);
+      }
+    });
+
+    const fileDate = new Date().toISOString().slice(0, 10);
+    doc.save(`category-sales-report-${fileDate}.pdf`);
+    return;
 
   } else if (CURRENT_TAB === 'staff') {
     orientation = 'p';
@@ -2355,7 +2570,7 @@ function exportPDF() {
     head: head,
     body: body,
     theme: 'striped',
-    headStyles: { fillColor: [230, 126, 34], textColor: [255, 255, 255], fontStyle: 'bold' },
+    headStyles: { fillColor: [0, 169, 224], textColor: [255, 255, 255], fontStyle: 'bold' },
     styles: { fontSize: 8, cellPadding: 2.5 },
     columnStyles: columnStyles,
     didDrawPage: function (data) {
