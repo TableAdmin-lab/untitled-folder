@@ -120,59 +120,68 @@ input { font: inherit; }
 /* ============================================================
    APP LAYOUT
    ============================================================ */
-.app { display: flex; min-height: 100vh; }
+.app { display: flex; flex-direction: column; min-height: 100vh; }
 .app.hidden { display: none; }
 .main-wrapper { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
 /* ============================================================
-   SIDEBAR
+   TOP NAVBAR
    ============================================================ */
-.sidebar {
-  width: 260px; flex-shrink: 0; background: var(--sidebar-bg);
-  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
-  padding: 24px 16px; overflow-y: auto; z-index: 10;
+.navbar {
+  position: sticky; top: 0; z-index: 10; background: var(--sidebar-bg);
+  border-bottom: 1px solid rgba(255,255,255,0.08); padding: 12px 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  height: 64px;
 }
-.sidebar-logo {
-  display: flex; align-items: center; gap: 12px; padding: 0 8px 28px;
-  border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px;
+.navbar-logo {
+  display: flex; align-items: center; gap: 10px; color: #fff;
 }
 .logo-icon {
-  width: 38px; height: 38px; border-radius: 10px;
+  width: 32px; height: 32px; border-radius: 8px;
   background: linear-gradient(135deg, #00A9E0, #7DD3FC);
   display: grid; place-items: center; flex-shrink: 0;
 }
-.logo-icon svg { width: 20px; height: 20px; color: #fff; }
-.sidebar-logo span { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
-.sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-.nav-item {
-  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-sm);
-  font-size: 14px; font-weight: 500; color: var(--sidebar-text); transition: all 0.15s ease;
-  width: 100%; text-align: left;
+.logo-icon svg { width: 16px; height: 16px; color: #fff; }
+.navbar-logo span { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+
+/* Sliding Pill selector */
+.top-nav {
+  position: relative; display: flex; align-items: center;
+  background: rgba(255,255,255,0.06); border-radius: 99px;
+  padding: 4px; gap: 2px; border: 1px solid rgba(255,255,255,0.04);
 }
-.nav-item:hover { background: var(--sidebar-hover); color: #CBD5E1; }
-.nav-item.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
-.nav-item svg { width: 20px; height: 20px; flex-shrink: 0; stroke-width: 1.8; }
-.sidebar-spacer { flex: 1; min-height: 24px; }
-.sidebar-footer { display: flex; flex-direction: column; gap: 2px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+.nav-indicator {
+  position: absolute; top: 4px; bottom: 4px; left: 4px; width: 0;
+  background: var(--primary); border-radius: 99px;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); z-index: 1;
+}
+.nav-pill {
+  position: relative; display: flex; align-items: center; gap: 8px;
+  padding: 6px 16px; font-size: 13px; font-weight: 600;
+  color: rgba(255,255,255,0.65); border-radius: 99px; cursor: pointer;
+  transition: color 0.25s ease; z-index: 2; text-align: center;
+}
+.nav-pill.active { color: #fff; }
+.nav-pill:hover:not(.active) { color: #fff; }
+.nav-pill svg { width: 15px; height: 15px; stroke-width: 2; }
 
 /* ============================================================
    HEADER
    ============================================================ */
 .header {
-  position: sticky; top: 0; z-index: 8; background: var(--card);
-  border-bottom: 1px solid var(--border); padding: 20px 32px;
+  padding: 24px 32px 12px; max-width: 1600px; width: 100%; margin: 0 auto;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 .header-left h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
 .header-left p { font-size: 13px; color: var(--muted); margin-top: 2px; }
 .header-right { display: flex; align-items: center; gap: 10px; }
 .header-date {
-  display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: var(--radius-sm);
   border: 1px solid var(--border); font-size: 13px; font-weight: 500; color: var(--text); background: var(--card);
 }
 .header-date svg { width: 16px; height: 16px; color: var(--muted); }
 .btn {
-  display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: var(--radius-sm);
   font-size: 13px; font-weight: 600; transition: all 0.15s ease; border: 1px solid var(--border);
   background: var(--card); color: var(--text);
 }
@@ -192,7 +201,7 @@ input { font: inherit; }
 /* ============================================================
    CONTENT AREA
    ============================================================ */
-.content { padding: 24px 32px 48px; max-width: 1400px; width: 100%; }
+.content { padding: 12px 32px 48px; max-width: 1600px; width: 100%; margin: 0 auto; }
 
 /* ============================================================
    KPI CARDS
@@ -505,9 +514,34 @@ input { font: inherit; }
 @media (max-width: 1100px) {
   .row-7-3, .row-2 { grid-template-columns: 1fr; }
   .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .navbar { padding: 12px 20px; }
+}
+@media (max-width: 900px) {
+  .navbar {
+    height: auto;
+    flex-direction: column;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .top-nav {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    scrollbar-width: none;
+  }
+  .top-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-indicator {
+    display: none;
+  }
+  .nav-pill {
+    flex: 1 0 auto;
+    text-align: center;
+  }
 }
 @media (max-width: 768px) {
-  .sidebar { display: none; }
   .header { padding: 16px 20px; }
   .content { padding: 16px 20px 32px; }
   .header-right .user-info, .header-right .header-date { display: none; }
@@ -603,68 +637,89 @@ input { font: inherit; }
      ============================================================ -->
 <div class="app hidden" id="app">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
+  <!-- TOP NAVBAR -->
+  <header class="navbar">
+    <div class="navbar-logo">
       <div class="logo-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       </div>
       <span>POS Analytics</span>
     </div>
-    <nav class="sidebar-nav">
-      <button class="nav-item active" data-tab="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></button>
-      <button class="nav-item" data-tab="products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span>Products</span></button>
-      <button class="nav-item" data-tab="categories"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg><span>Categories</span></button>
-      <button class="nav-item" data-tab="staff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Staff</span></button>
-      <button class="nav-item" data-tab="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg><span>Reports</span></button>
-      <button class="nav-item" id="openConnectSide" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
+    
+    <!-- Sliding Tab Pills -->
+    <nav class="top-nav">
+      <div class="nav-indicator" id="navIndicator"></div>
+      <button class="nav-pill active" data-tab="dashboard" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-pill" data-tab="products" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        <span>Products</span>
+      </button>
+      <button class="nav-pill" data-tab="categories" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
+        <span>Categories</span>
+      </button>
+      <button class="nav-pill" data-tab="staff" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Staff</span>
+      </button>
+      <button class="nav-pill" data-tab="reports" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+        <span>Reports</span>
+      </button>
+      <button class="nav-pill" id="openConnectSide" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </button>
     </nav>
-    <div class="sidebar-spacer"></div>
-    <div class="sidebar-footer">
-      <button class="nav-item" id="logoutBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></button>
+    
+    <!-- Navbar Right controls -->
+    <div class="header-right">
+      <div class="header-date" id="headerDate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span class="date-range-label" id="dateRangeLabel" style="display:none">Range Selected</span>
+        <span id="dateRangeText">Loading…</span>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="btn" id="filterBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Filters
+      </button>
+      <div class="export-container" style="position: relative; display: inline-block;">
+        <button class="btn btn-primary" id="exportBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+        <div class="export-dropdown" id="exportDropdown">
+          <button class="export-dropdown-item" type="button" id="exportXLSXBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="15"/></svg>
+            Excel (.xlsx)
+          </button>
+          <button class="export-dropdown-item" type="button" id="exportPDFBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            PDF Document
+          </button>
+        </div>
+      </div>
+      <button class="btn" id="logoutBtn" type="button" title="Logout" style="padding: 8px 10px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
     </div>
-  </aside>
+  </header>
 
   <!-- MAIN AREA -->
   <div class="main-wrapper">
-    <header class="header" id="header">
+    <div class="header" id="header">
       <div class="header-left">
-        <h1>Retail Sales Dashboard</h1>
-        <p>Overview of sales performance</p>
+        <h1 id="pageTitle">Retail Sales Dashboard</h1>
+        <p id="pageDescription">Overview of sales performance</p>
       </div>
-      <div class="header-right">
-        <div class="header-date" id="headerDate">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span class="date-range-label" id="dateRangeLabel" style="display:none">Range Selected</span>
-          <span id="dateRangeText">Loading…</span>
-        </div>
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
-          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-        <button class="btn" id="filterBtn" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          Filters
-        </button>
-        <div class="export-container" style="position: relative; display: inline-block;">
-          <button class="btn btn-primary" id="exportBtn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export
-          </button>
-          <div class="export-dropdown" id="exportDropdown">
-            <button class="export-dropdown-item" type="button" id="exportXLSXBtn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="15"/></svg>
-              Excel (.xlsx)
-            </button>
-            <button class="export-dropdown-item" type="button" id="exportPDFBtn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              PDF Document
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </header>
+    </div>
 
     <main class="content">
       <!-- 1. DASHBOARD VIEW -->
@@ -1261,11 +1316,27 @@ async function connectYoco() {
 /* ============================================================
    TAB SWITCHING & VIEW RENDERING
    ============================================================ */
+function updateNavIndicator(tab) {
+  const activeBtn = document.querySelector(`.top-nav .nav-pill[data-tab="${tab}"]`);
+  const indicator = document.getElementById('navIndicator');
+  if (activeBtn && indicator) {
+    indicator.style.left = `${activeBtn.offsetLeft}px`;
+    indicator.style.width = `${activeBtn.offsetWidth}px`;
+  }
+}
+
+window.addEventListener('resize', () => {
+  if (MODE !== 'empty') {
+    updateNavIndicator(CURRENT_TAB);
+  }
+});
+
 function switchTab(tabName) {
   CURRENT_TAB = tabName;
-  document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
+  document.querySelectorAll('.top-nav .nav-pill').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tabName);
   });
+  updateNavIndicator(tabName);
   document.querySelectorAll('.tab-view').forEach(view => {
     view.classList.toggle('hidden', view.id !== `view-${tabName}`);
   });
@@ -1590,8 +1661,8 @@ function boot(mode) {
     document.getElementById('productsToggle').addEventListener('click', () => { PRODUCTS_EXPANDED = !PRODUCTS_EXPANDED; renderProducts(); });
     document.getElementById('txnToggle').addEventListener('click', () => { TXN_EXPANDED = !TXN_EXPANDED; renderTransactions(); });
     
-    // Sidebar tabs navigation click handler
-    document.querySelectorAll('.sidebar-nav button[data-tab]').forEach(btn => {
+    // Top-nav tabs navigation click handler
+    document.querySelectorAll('.top-nav .nav-pill[data-tab]').forEach(btn => {
       btn.addEventListener('click', () => {
         switchTab(btn.dataset.tab);
       });
@@ -1640,8 +1711,9 @@ function boot(mode) {
       categorySearchQuery = '';
       document.getElementById('emptyState').classList.add('show');
       document.getElementById('app').classList.add('hidden');
-      document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => btn.classList.remove('active'));
-      document.querySelector('.sidebar-nav .nav-item[data-tab="dashboard"]').classList.add('active');
+      document.querySelectorAll('.top-nav .nav-pill').forEach(btn => btn.classList.remove('active'));
+      document.querySelector('.top-nav .nav-pill[data-tab="dashboard"]').classList.add('active');
+      updateNavIndicator('dashboard');
       document.querySelectorAll('.tab-view').forEach(v => v.classList.toggle('hidden', v.id !== 'view-dashboard'));
       document.getElementById('yocoEmail').value = '';
       document.getElementById('yocoPassword').value = '';
@@ -1671,6 +1743,7 @@ function boot(mode) {
   }
 
   render();
+  setTimeout(() => updateNavIndicator(CURRENT_TAB), 100);
   if (location.hash === '#connect') setTimeout(openConnect, 300);
   setTimeout(hideProgress, 300);
 }
