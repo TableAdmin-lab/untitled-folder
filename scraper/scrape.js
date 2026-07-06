@@ -585,8 +585,8 @@ function parseReport(path, range) {
       }
       return item;
     })
-    // Only aggregate approved/completed transactions
-    .filter((p) => p.name && !/^total/i.test(String(p.name)) && (!p.status || /approved|successful|completed/i.test(p.status)));
+    // Only aggregate approved/completed or refunded/returned transactions
+    .filter((p) => p.name && !/^total/i.test(String(p.name)) && (!p.status || /approved|successful|completed|refunded|returned/i.test(p.status)));
 
   const groupAndSort = (items, key) => {
     const counts = {};
